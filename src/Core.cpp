@@ -5,7 +5,8 @@
 
 Core::Core()
 {
-	memset (&_fdset, 0, sizeof(_sockfd));
+	memset (&_fdset, 0, sizeof(_fdset));
+	memset (&_sockfd, 0, sizeof(_sockfd));
 }
 
 Core::~Core()
@@ -17,61 +18,64 @@ void Core::startServ()
 {
 	initSocets();
 
-
-		mainLoop();
+	mainLoop();
 }
 
-struct addrinfo* getInfo(const char* &port)
-{
-	struct addrinfo *res;
-	struct addrinfo hints;
-
-	memset(&hints, 0, sizeof hints); // очистка структуры
-	hints.ai_family = PF_INET; // IPv4
-	hints.ai_socktype = SOCK_STREAM; // потоковый сокет TCP
-	if (getaddrinfo(nullptr, port, &hints, &res) != 0)
-	{
-		std::cout << "Cant get addrinfo" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	return (res);
-}
+//struct addrinfo* getInfo(const char* &port)
+//{
+//	struct addrinfo *res;
+//	struct addrinfo hints;
+//
+//	memset(&hints, 0, sizeof hints); // очистка структуры
+//	hints.ai_family = PF_INET; // IPv4
+//	hints.ai_socktype = SOCK_STREAM; // потоковый сокет TCP
+//	if (getaddrinfo(nullptr, port, &hints, &res) != 0)
+//	{
+//		std::cout << "Cant get addrinfo" << std::endl;
+//		exit(EXIT_FAILURE);
+//	}
+//	return (res);
+//}
 
 bool Core::initSocets()
 {
 
 	int 						yes = 1, serv_size = 1; 	 //num servers in config
-	const char* port = 			"2021";						//replace by config value
-	struct addrinfo 			*addrInfo = getInfo(port);
+	int port = 			2021;						//replace by config value
+	//struct addrinfo 			*addrInfo = getInfo(port);
 
-	struct sockaddr_in *addr; //TODO del after get IP from config
+	sockaddr_in addr; //TODO del after get IP from config
 	char ip4[INET_ADDRSTRLEN];
 
-	addr = (struct sockaddr_in*)addrInfo->ai_addr;
-	inet_ntop(addrInfo->ai_family, &(addr->sin_addr), ip4, INET_ADDRSTRLEN); //TODO del after get IP from config
+	//addr = (struct sockaddr_in*)addrInfo->ai_addr;
+	addr.sin_family = PF_INET;
+	addr.sin_addr.s_addr = inet_addr(LOCALHOST);
+	addr.sin_port = htons(port);
+	memset(addr.sin_zero, '\0', sizeof addr.sin_zero);
+	inet_ntop(addr.sin_family, &(addr.sin_addr.s_addr), ip4, INET_ADDRSTRLEN); //TODO del after get IP from config
 	std::cout << "http://"  << ip4 << ":" << port << std::endl;
 
 	for (int i = 0; i < serv_size; ++i)
 	{
-		if ((_sockfd[i] = socket(addrInfo->ai_family, addrInfo->ai_socktype, addrInfo->ai_protocol)) < 0)
+		if ((_sockfd[i] = socket(addr.sin_family, SOCK_STREAM, 0)) < 0)
 		{
-			std::cout << "cant create socket" << std::endl;
+			std::cout << REDCOL"cant create socket" << RESCOL << std::endl;
 			throw CoreException();
 		}
 		setsockopt(_sockfd[i], SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&yes), sizeof yes);
 		fcntl(_sockfd[i], F_SETFL | O_NONBLOCK);
-		if (bind(_sockfd[i], addrInfo->ai_addr, addrInfo->ai_addrlen) < 0)
+		if (bind(_sockfd[i], (struct sockaddr *)&addr, sizeof(addr)) < 0)
 		{
-			std::cout << "Can't bind socket" << std::endl;
+			std::cout << REDCOL"Can't bind socket" << RESCOL << std::endl;
 			throw CoreException();
 		}
 		if (listen(_sockfd[i], SOMAXCONN))
 		{
-			std::cout << "Can't listen socket" << std::endl;
+			std::cout << REDCOL"Can't listen socket" << RESCOL << std::endl;
 			throw CoreException();
 		}
 	}
-	freeaddrinfo(addrInfo);
+	//freeaddrinfo(addrInfo);
 	return (true);
 }
 
@@ -87,7 +91,7 @@ void Core::mainLoop(void)
 	std::string line, res;
 	std::ifstream page("simple.html", std::ios::binary);
 	if (!page.is_open())
-		std::cout << "Cant open" << std::endl;
+		std::cout << REDCOL"Cant open" << RESCOL << std::endl;
 	else
 	{
 		while (std::getline(page, line))
@@ -102,12 +106,12 @@ void Core::mainLoop(void)
 	{
 		if ((pollRet = poll(_fdset, numfds, 5000)) < 0)
 		{
-			std::cout << "Can't poll" << std::endl;
+			std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
 			throw CoreException();
 		}
-		if (pollRet == 0)
+		if (pollRet == 0) // && connection !keep-alive
 		{
-			std::cout << "TIMEOUT at fd " << _sockfd[0] << std::endl;
+			std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0]  << RESCOL << std::endl;
 			close(_fdset[0].fd);
 			return;
 		}
@@ -119,8 +123,7 @@ void Core::mainLoop(void)
 				std::cout << "POLLIN in fd" << _fdset[i].fd << std::endl;
 				if (i == 0)
 				{
-					if ((newSock = accept(_fdset[i].fd, (struct sockaddr *) &their_addr, (socklen_t *) &addrLen)) <
-						0)
+					if ((newSock = accept(_fdset[i].fd, (struct sockaddr *) &their_addr, (socklen_t *) &addrLen)) < 0)
 					{
 						perror("in: acept");
 						exit(EXIT_FAILURE);
@@ -134,7 +137,7 @@ void Core::mainLoop(void)
 					}
 					else
 					{
-						std::cout << "can't serve more clients!" << std::endl;
+						std::cout << REDCOL"can't serve more clients!" << RESCOL << std::endl;
 						close(newSock);
 					}
 				}
@@ -146,17 +149,16 @@ void Core::mainLoop(void)
 					b = buf;
 					std::cout << b << std::endl;
 					if (valread < 0)
-						std::cout << "no request" << std::endl;
+						std::cout << REDCOL"no request" << RESCOL << std::endl;
 					std::string ms;
 					ms += "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + std::to_string(ms.length() +
-																										res.length())
-						  +
-						  "\n\nHello" + res;
+							res.length()) + "\n\n" + res;
 					std::cout << ms << std::endl;
 					send(_fdset[i].fd, ms.c_str(), ms.length(), 0);
 					close(_fdset[i].fd);
 					_fdset[i].fd = -1;
 					_fdset[i].events = 0;
+					numfds--;
 				}
 			}
 		}

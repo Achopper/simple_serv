@@ -14,7 +14,7 @@
 
 #define PORT "2021"
 #define MAXCLIENT 1024
-//#define LOCALHOST "127.0.0.1"
+
 #define PROTOCOL "http"
 
 //struct addrinfo* getInfo()

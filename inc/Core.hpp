@@ -5,16 +5,9 @@
 #define MAXCLIENTS 1024
 #define REDCOL "\33[31m"
 #define RESCOL "\33[00m"
-#define LOCALHOST "127.0.0.1"
+#define LOCALHOST "127.0.0.1" //TODO del after parse config
 
-#include <netdb.h>
-#include <list>
-#include <iostream>
-#include "Client.hpp"
-#include <sys/fcntl.h>
-#include <sys/poll.h>
-#include <unistd.h>
-#include <machine/types.h>
+#include "serv_includes.hpp"
 
 
 
@@ -28,7 +21,7 @@ private:
 
 	int 						_sockfd[10];		//TODO make dynamic(server count)
 	pollfd 						_fdset[MAXCLIENTS];
-	//std::list<Client> 			_clientList;
+	//std::list<Client> 		_clientList;
 	//std::vector<Server>		_servers
 
 public:

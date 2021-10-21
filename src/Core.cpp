@@ -21,33 +21,17 @@ void Core::startServ()
 	mainLoop();
 }
 
-//struct addrinfo* getInfo(const char* &port)
-//{
-//	struct addrinfo *res;
-//	struct addrinfo hints;
-//
-//	memset(&hints, 0, sizeof hints); // очистка структуры
-//	hints.ai_family = PF_INET; // IPv4
-//	hints.ai_socktype = SOCK_STREAM; // потоковый сокет TCP
-//	if (getaddrinfo(nullptr, port, &hints, &res) != 0)
-//	{
-//		std::cout << "Cant get addrinfo" << std::endl;
-//		exit(EXIT_FAILURE);
-//	}
-//	return (res);
-//}
 
 bool Core::initSocets()
 {
 
-	int 						yes = 1, serv_size = 1; 	 //num servers in config
-	int port = 			2021;						//replace by config value
-	//struct addrinfo 			*addrInfo = getInfo(port);
+	int 		yes = 1, serv_size = 1; 	 //num servers in config
+	int port = 	2021;						//replace by config value
 
-	sockaddr_in addr; //TODO del after get IP from config
-	char ip4[INET_ADDRSTRLEN];
+	sockaddr_in addr;
+	char 		ip4[INET_ADDRSTRLEN];  //TODO del after get IP from config
 
-	//addr = (struct sockaddr_in*)addrInfo->ai_addr;
+
 	addr.sin_family = PF_INET;
 	addr.sin_addr.s_addr = inet_addr(LOCALHOST);
 	addr.sin_port = htons(port);
@@ -62,7 +46,7 @@ bool Core::initSocets()
 			std::cout << REDCOL"cant create socket" << RESCOL << std::endl;
 			throw CoreException();
 		}
-		setsockopt(_sockfd[i], SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&yes), sizeof yes);
+		setsockopt(_sockfd[i], SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
 		fcntl(_sockfd[i], F_SETFL | O_NONBLOCK);
 		if (bind(_sockfd[i], (struct sockaddr *)&addr, sizeof(addr)) < 0)
 		{
@@ -75,7 +59,6 @@ bool Core::initSocets()
 			throw CoreException();
 		}
 	}
-	//freeaddrinfo(addrInfo);
 	return (true);
 }
 

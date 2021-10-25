@@ -1,12 +1,13 @@
 
 #include <arpa/inet.h> //TODO del after get IP from config
 #include "../inc/Core.hpp"
-#include <fstream>
+
 
 Core::Core()
 {
 	memset (&_fdset, 0, sizeof(_fdset));
 	memset (&_sockfd, 0, sizeof(_sockfd));
+	//_servSize = config.getServCount();
 }
 
 Core::~Core()
@@ -25,7 +26,8 @@ void Core::startServ()
 bool Core::initSocets()
 {
 
-	int 		yes = 1, serv_size = 1; 	 //num servers in config
+	int 		yes = 1;
+	uint32_t _servSize = 1; 	 //num servers in config
 	int port = 	2021;						//replace by config value
 
 	sockaddr_in addr;
@@ -39,7 +41,7 @@ bool Core::initSocets()
 	inet_ntop(addr.sin_family, &(addr.sin_addr.s_addr), ip4, INET_ADDRSTRLEN); //TODO del after get IP from config
 	std::cout << "http://"  << ip4 << ":" << port << std::endl;
 
-	for (int i = 0; i < serv_size; ++i)
+	for (uint32_t i = 0; i < _servSize; ++i)
 	{
 		if ((_sockfd[i] = socket(addr.sin_family, SOCK_STREAM, 0)) < 0)
 		{
@@ -80,6 +82,7 @@ void Core::mainLoop(void)
 		while (std::getline(page, line))
 			res += line + "\n";
 	}
+	page.close();
 	for (nfds_t i = 0; i < servNum; ++i)
 	{
 		_fdset[i].fd = _sockfd[i];

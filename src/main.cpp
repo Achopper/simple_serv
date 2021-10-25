@@ -2,17 +2,30 @@
 #include <array>
 
 #include "../inc/Core.hpp"
+#include "../inc/Config.hpp"
 
-int main()
+
+int main(int argc, char **argv)
 {
-	Core core;
-
-	try
+	if (argc > 2)
 	{
-		core.startServ();
-	}catch (std::exception &ex)
-	{
-		std::cout << ex.what() << std::endl;
+		std::cerr << REDCOL"Too many arguments, type path to config file" << RESCOL << std::endl;
+		exit(EXIT_FAILURE);
 	}
+	std::string pathToConf = (argc == 1) ? "./config/def.conf" : argv[1];
+	Config config(pathToConf);
+	if (config.getErrors().size() > 1)
+	{
+		std::cerr << config.getErrors() << std::endl;
+	}
+//	Core core;
+//
+//	try
+//	{
+//		core.startServ();
+//	}catch (std::exception &ex)
+//	{
+//		std::cout << ex.what() << std::endl;
+//	}
 	return 0;
 }

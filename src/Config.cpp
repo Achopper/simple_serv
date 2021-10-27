@@ -77,7 +77,7 @@ std::vector<std::string> Config::splitConf()
 	return (res);
 }
 
-std::vector<std::string> Config::preParse(std::string &toParse)
+std::vector<std::string> Config::preParse(std::string const &toParse)
 {
 	std::vector<std::string> res;
 	char commStart = '#';
@@ -162,10 +162,18 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 		if (*word == "listen")
 		{
 			pos = (++word)->find(':', 0);
+			if (pos == std::string::npos)
+			{
+				_err.append("Wrong host adress: " + *word);
+				return (false);
+			}
 			if (!checkSemicolon(word))
 				return (false);
-			server.setPort(std::string(std::begin(*word) + (long )pos + 1,word->end() - 1));
-			server.setServIp(word->substr(0, pos));
+			if (!(server.setAddr(std::string(std::begin(*word), word->end() - 1), pos)))
+			{
+				_err.append(REDCOL"Wrong host adress: " + *word + RESCOL);
+				return (false);
+			}
 		}
 		else if (*word == "server_name")
 		{
@@ -185,8 +193,7 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 		}
 		*++word;
 	}
-	//server.setAddr();
-	_servers.push_back(server);
+	setServer(server);
 	_servCount++;
 	return (true);
 }
@@ -211,6 +218,7 @@ uint32_t Config::getServCount() const
 	return _servCount;
 }
 
-
-
-
+void Config::setServer(Server &server)
+{
+	_servers.push_back(server);
+}

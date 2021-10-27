@@ -2,7 +2,6 @@
 #include <array>
 
 #include "../inc/Core.hpp"
-#include "../inc/Config.hpp"
 
 
 int main(int argc, char **argv)
@@ -17,15 +16,16 @@ int main(int argc, char **argv)
 	if (config.getErrors().size() > 1)
 	{
 		std::cerr << config.getErrors() << std::endl;
+		return (EXIT_FAILURE);
 	}
-//	Core core;
-//
-//	try
-//	{
-//		core.startServ();
-//	}catch (std::exception &ex)
-//	{
-//		std::cout << ex.what() << std::endl;
-//	}
+	Core core(config);
+
+	try
+	{
+		core.startServ();
+	}catch (std::exception &ex)
+	{
+		std::cout << ex.what() << std::endl;
+	}
 	return 0;
 }

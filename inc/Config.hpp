@@ -28,13 +28,15 @@ public:
 	std::string getConf					( void ) const;
 	uint32_t 	getServCount			( void ) const;
 
+	void		setServer				( Server &server );
+
 
 	std::string 	readConfig			( std::string const &conf);
 	void 			parseConfig			( void );
 
 protected:
 
-	std::vector<std::string> preParse	( std::string &toParse );
+	std::vector<std::string> preParse	( std::string const &toParse );
 	std::vector<std::string> splitConf	( void );
 	bool 		parseServerBlock		( std::vector<std::string> &conf, std::vector<std::string>::iterator &word );
 	bool 		checkSemicolon			( std::vector<std::string>::iterator &word );

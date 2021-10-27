@@ -1,13 +1,13 @@
 
-#include <arpa/inet.h> //TODO del after get IP from config
 #include "../inc/Core.hpp"
 
 
-Core::Core()
+Core::Core(Config & config)
 {
 	memset (&_fdset, 0, sizeof(_fdset));
 	memset (&_sockfd, 0, sizeof(_sockfd));
-	//_servSize = config.getServCount();
+	_servSize = config.getServCount();
+	_servers = config.getServers();
 }
 
 Core::~Core()
@@ -25,24 +25,11 @@ void Core::startServ()
 
 bool Core::initSocets()
 {
-
 	int 		yes = 1;
-	uint32_t _servSize = 1; 	 //num servers in config
-	int port = 	2021;						//replace by config value
-
-	sockaddr_in addr;
-	char 		ip4[INET_ADDRSTRLEN];  //TODO del after get IP from config
-
-
-	addr.sin_family = PF_INET;
-	addr.sin_addr.s_addr = inet_addr(LOCALHOST);
-	addr.sin_port = htons(port);
-	memset(addr.sin_zero, '\0', sizeof addr.sin_zero);
-	inet_ntop(addr.sin_family, &(addr.sin_addr.s_addr), ip4, INET_ADDRSTRLEN); //TODO del after get IP from config
-	std::cout << "http://"  << ip4 << ":" << port << std::endl;
 
 	for (uint32_t i = 0; i < _servSize; ++i)
 	{
+		sockaddr_in addr = _servers.at(i).getAddr();
 		if ((_sockfd[i] = socket(addr.sin_family, SOCK_STREAM, 0)) < 0)
 		{
 			std::cout << REDCOL"cant create socket" << RESCOL << std::endl;
@@ -50,7 +37,8 @@ bool Core::initSocets()
 		}
 		setsockopt(_sockfd[i], SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
 		fcntl(_sockfd[i], F_SETFL | O_NONBLOCK);
-		if (bind(_sockfd[i], (struct sockaddr *)&addr, sizeof(addr)) < 0)
+
+		if (bind(_sockfd[i], (struct sockaddr *) &addr, sizeof(addr)) < 0)
 		{
 			std::cout << REDCOL"Can't bind socket" << RESCOL << std::endl;
 			throw CoreException();
@@ -60,14 +48,15 @@ bool Core::initSocets()
 			std::cout << REDCOL"Can't listen socket" << RESCOL << std::endl;
 			throw CoreException();
 		}
+		_fdset[i].fd = _sockfd[i];
+		_fdset[i].events = POLLIN;
 	}
 	return (true);
 }
 
 void Core::mainLoop(void)
 {
-	nfds_t servNum = 1; //TODO num servers in config
-	nfds_t numfds = servNum;
+	nfds_t numfds = _servSize;
 	int pollRet = 0;
 	int newSock;
 	struct sockaddr_storage their_addr;
@@ -78,19 +67,13 @@ void Core::mainLoop(void)
 	if (!page.is_open())
 		std::cout << REDCOL"Cant open" << RESCOL << std::endl;
 	else
-	{
 		while (std::getline(page, line))
 			res += line + "\n";
-	}
 	page.close();
-	for (nfds_t i = 0; i < servNum; ++i)
-	{
-		_fdset[i].fd = _sockfd[i];
-		_fdset[i].events = POLLIN;
-	}
+
 	while (true)
 	{
-		if ((pollRet = poll(_fdset, numfds, 5000)) < 0)
+		if ((pollRet = poll(_fdset, numfds, TIMEOUT)) < 0)
 		{
 			std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
 			throw CoreException();
@@ -150,4 +133,3 @@ void Core::mainLoop(void)
 		}
 	}
 }
-

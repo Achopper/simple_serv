@@ -3,8 +3,6 @@
 #define SERVER_HPP
 
 #include "serv_includes.hpp"
-//#include "Config.hpp"
-//class Config;
 
 typedef struct sockaddr_in sockaddr_in;
 
@@ -26,10 +24,10 @@ public:
 
 	Server& 						operator=( Server const& obj );
 
-	void	setServIp				( std::string const & ip );
-	void 	setPort					( std::string const & port);
+	bool	setServIp				( std::string const & ip );
+	bool 	setPort					( std::string const & port);
 	void 	setServName				( std::string const & servName);
-	void 	setAddr					( void );
+	bool 	setAddr					( std::string const &addr, std::string::size_type &pos );
 
 	std::string		getServIp		( void ) const;
 	std::string 	getPort			( void ) const;

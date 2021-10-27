@@ -37,7 +37,7 @@ void Client::setBody(const std::string &body)
 	_body = body;
 }
 
-void Client::setSet( pollfd & setFd )
+void Client::setSetFd( pollfd & setFd )
 {
 	_setFd = setFd;
 }

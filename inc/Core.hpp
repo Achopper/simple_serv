@@ -17,7 +17,7 @@ private:
 
 	uint32_t 						_servSize;
 	int 							_sockfd[10];		//TODO make dynamic(server count)
-	pollfd 							_fdset[MAXCLIENTS];
+	pollfd 							_fdset[OPEN_MAX];
 	std::vector<Client> 			_clientList;
 	std::vector<Server>				_servers;
 

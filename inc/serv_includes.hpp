@@ -6,7 +6,7 @@
 #define DEBUG_MODE 1
 #define REDCOL "\33[31m"
 #define RESCOL "\33[00m"
-#define MAXCLIENTS 1024
+//#define MAXCLIENTS 1024
 #define PROT HTTP/1.1
 #define TIMEOUT -1
 

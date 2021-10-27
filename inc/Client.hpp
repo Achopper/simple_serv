@@ -27,7 +27,7 @@ public:
 
 	void 	setBody			( std::string const & body );
 	void 	setReq			( std::string const & req );
-	void 	setSet			( pollfd & set );
+	void 	setSetFd		( pollfd & setFd );
 
 	int		getServFd		( void ) const;
 //	int		getCliFd		( void ) const;

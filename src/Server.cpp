@@ -19,6 +19,7 @@ Server &Server::operator=(const Server &obj)
 	if (this != &obj)
 	{
 		_servIp = obj._servIp;
+		_listenFd = obj._listenFd;
 		_serverName = obj._serverName;
 		_port = obj._port;
 		_addr = obj._addr;
@@ -65,23 +66,33 @@ bool Server::setAddr(const std::string &addr, unsigned long &pos)
 	return (true);
 }
 
-std::string Server::getServIp(void) const
+void Server::setFd(int const & fd)
+{
+	_listenFd = fd;
+}
+
+std::string Server::getServIp() const
 {
 	return (_servIp);
 }
 
-std::string Server::getPort(void) const
+std::string Server::getPort() const
 {
 	return (_port);
 }
 
-std::string Server::getServName(void) const
+std::string Server::getServName() const
 {
 	return (_serverName);
 }
 
-sockaddr_in Server::getAddr(void) const
+sockaddr_in Server::getAddr() const
 {
 	return (_addr);
+}
+
+int Server::getFd() const
+{
+	return _listenFd;
 }
 

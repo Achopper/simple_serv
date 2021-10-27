@@ -15,6 +15,7 @@ private:
 	std::string						_servIp;
 	std::string						_serverName;
 	std::string						_port;
+	int 							_listenFd;
 
 public:
 
@@ -28,11 +29,13 @@ public:
 	bool 	setPort					( std::string const & port);
 	void 	setServName				( std::string const & servName);
 	bool 	setAddr					( std::string const &addr, std::string::size_type &pos );
+	void 	setFd					( int const & fd);
 
 	std::string		getServIp		( void ) const;
 	std::string 	getPort			( void ) const;
 	std::string 	getServName		( void ) const;
 	sockaddr_in		getAddr			( void ) const;
+	int 			getFd			( void ) const;
 
 };
 

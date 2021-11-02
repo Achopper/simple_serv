@@ -29,7 +29,8 @@ Server &Server::operator=(const Server &obj)
 
 bool Server::setServIp(std::string const & ip)
 {
-	for (std::string::iterator it; it != ip.end() - 1; )
+    std::string::const_iterator it;
+	for (it = ip.begin(); it != ip.end() - 1; )
 		if (!(std::isdigit(*++it) || *it == '.'))
 			return (false);
 	_servIp = ip;

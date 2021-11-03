@@ -1,8 +1,8 @@
 
 #include "../inc/Client.hpp"
 
-Client::Client (const int &srvFd, Server const & server)
-: _server(server), _servFd(srvFd)
+Client::Client (const int &srvFd, Server const & server, pollfd* set)
+: _server(server), _servFd(srvFd), _setFd(set)
 {
 }
 
@@ -37,7 +37,7 @@ void Client::setBody(const std::string &body)
 	_body = body;
 }
 
-void Client::setSetFd( pollfd & setFd )
+void Client::setSetFd( pollfd  *setFd )
 {
 	_setFd = setFd;
 }
@@ -62,7 +62,7 @@ std::string Client::getReq(void) const
 	return (_req);
 }
 
-pollfd Client::getSetFd(void) const
+pollfd* Client::getSetFd(void) const
 {
 	return (_setFd);
 }

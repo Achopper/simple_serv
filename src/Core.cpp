@@ -38,7 +38,7 @@ bool Core::initSocets()
 			throw CoreException();
 		}
 		setsockopt(_sockfd[i], SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
-		fcntl(_sockfd[i], F_SETFL | O_NONBLOCK);
+		fcntl(_sockfd[i], F_SETFL , O_NONBLOCK);
 
 		if (bind(_sockfd[i], (struct sockaddr *) &addr, sizeof(addr)) < 0)
 		{
@@ -57,105 +57,100 @@ bool Core::initSocets()
 	return (true);
 }
 
-void Core::mainLoop(void)
-{
-	nfds_t numfds = _servSize;
-	int pollRet;
-	int newSock;
-	struct sockaddr_storage their_addr;
-	ssize_t valread;
-	int addrLen = sizeof their_addr;
-	std::string b;
-	char buf[BUFSIZ] = {0};
-	std::string line, res;
-	std::ifstream page("simple.html", std::ios::binary);
+void Core::mainLoop(void) {
+    nfds_t numfds = _servSize;
+    int pollRet;
+    int newSock;
+    struct sockaddr_storage their_addr;
+    ssize_t valread;
+    int addrLen = sizeof their_addr;
+    std::string b;
+    char buf[BUFSIZ] = {0};
+    std::string line, res;
+    std::ifstream page("simple.html", std::ios::binary);
 
-	if (!page.is_open())
-		std::cout << REDCOL"Cant open" << RESCOL << std::endl;
-	else
-		while (std::getline(page, line))
-			res += line + "\n";
-	page.close();
-	std::string ms;
-	ms += "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + std::to_string(ms.length() +
-																						res.length()) + "\n\n" + res;
 
-	while (true)
-	{
-		if ((pollRet = poll(_fdset, numfds, TIMEOUT)) < 0)
-		{
-			std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
-			throw CoreException();
-		}
-		if (pollRet == 0) // && connection !keep-alive
-		{
-			std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0]  << RESCOL << std::endl;
-			close(_fdset[0].fd);
-			return;
-		}
-		for(nfds_t i = 0; i < numfds; ++i)
-		{
-			int j = 0;
-			if (_fdset[i].revents & POLLRDNORM)
-			{
-				newSock = accept(_fdset[i].fd, (struct sockaddr *) &their_addr, (socklen_t *) &addrLen);
-	//			_fdset[i].revents = 0;
-				fcntl(newSock, F_SETFL | O_NONBLOCK);
-				for (j = static_cast<int>(numfds); j < OPEN_MAX; ++j)
-				{
-					if (_fdset[j].fd < 0)
-					{
-						_fdset[j].fd = newSock;
-						_fdset[j].events = POLLRDNORM;
-						numfds++;
-						break;
-					}
-					if (j == OPEN_MAX)
-					{
-						std::cerr << "Can't serve more clients. Exit.." << std::endl;
-						exit(EXIT_FAILURE);
-					}
-				}
+    if (!page.is_open())
+        std::cout << REDCOL"Cant open" << RESCOL << std::endl;
+    else
+        while (std::getline(page, line))
+            res += line + "\n";
+    page.close();
+    std::string ms;
+    ms += "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + std::to_string(ms.length() +
+                                                                                        res.length()) + "\n\n" + res;
+
+    while (true) {
+        bzero(buf,BUFSIZ);
+        if ((pollRet = poll(_fdset, numfds, TIMEOUT)) < 0) {
+            std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
+            throw CoreException();
+        }
+        if (pollRet == 0) // && connection !keep-alive
+        {
+            std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0] << RESCOL << std::endl;
+            close(_fdset[0].fd);
+            return;
+        }
+        for (nfds_t i = 0; i < numfds; ++i) {
+            int j = 0;
+            if (_fdset[i].revents & POLLRDNORM) {
+                newSock = accept(_fdset[i].fd, (struct sockaddr *) &their_addr, (socklen_t *) &addrLen);
+                _fdset[i].revents &= ~POLLRDNORM;
+                fcntl(newSock, F_SETFL , O_NONBLOCK);
+                for (j = static_cast<int>(numfds); j < OPEN_MAX; ++j) {
+                    if (_fdset[j].fd < 0) {
+                        _fdset[j].fd = newSock;
+                        _fdset[j].events = POLLRDNORM;
+                        numfds++;
+                        break;
+                    }
+                    if (j == OPEN_MAX) {
+                        std::cerr << "Can't serve more clients. Exit.." << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                }
 //				if (j > static_cast<int>(numfds))
 //					numfds = static_cast<nfds_t>(j);
-				if (--pollRet <= 0)
-					continue;
-			}
-			for (j = (int)_servSize; j < static_cast<int>(numfds); ++j)
-			{
-				if ((newSock = _fdset[j].fd) < 0)
-					continue;
-				if (_fdset[j].revents & (POLLRDNORM | POLLERR))
-				{
-					valread = recv(newSock, buf, BUFSIZ, 0);
-					std::cout << valread << std::endl;
-					if (valread < 0)
-					{
-						std::cout << REDCOL"no request" << RESCOL << std::endl;
-						close(newSock);
-						_fdset[j].fd = -1;
-						//numfds--;
-					}
-					else if (valread == 0)
-					{
-						std::cout << "Connection close by client" << std::endl;
-						close(newSock);
-						_fdset[j].fd = -1;
-						//numfds--;
-					}
-					else
-					{
-						send(newSock, ms.c_str(), ms.length(), 0);
+                if (--pollRet <= 0)
+                    continue;
+            }
+            for (j = (int) _servSize; j < static_cast<int>(numfds); ++j) {
+
+                if ((newSock = _fdset[j].fd) < 0)
+                    continue;
+                if (_fdset[j].revents & (POLLRDNORM | POLLERR)) {
+                    _fdset[j].revents &= ~(POLLRDNORM | POLLERR);
+                    std::cout << _fdset[j].revents << std::endl;
+                    valread = recv(newSock, buf, BUFSIZ, 0);
+                    std::cout << buf << std::endl;
+                    if (valread < 0) {
+                        std::cout << strerror(errno) << REDCOL"no request" << RESCOL << std::endl;
+                        close(newSock);
+                        _fdset[j].fd = -1;
+                        numfds--;
+                    } else if (valread == 0) {
+                        std::cout << "Connection close by client" << std::endl;
+                        close(newSock);
+                        _fdset[j].fd = -1;
+                        numfds--;
+                    }
+//					else
+//					{
+                    send(newSock, ms.c_str(), ms.length(), 0);
 //						close(newSock);
 //						_fdset[j].fd = -1;
 //						numfds--;
-					}
-					if (--pollRet <= 0)
-						break;
-				}
-			}
-		}
-	}
+//					}
+                    if (--pollRet <= 0)
+                        break;
+                }
+            }
+        }
+    }
+}
+    //
+    //
 //		if ((pollRet = poll(_fdset, numfds, TIMEOUT)) < 0)
 //		{
 //			std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
@@ -211,4 +206,4 @@ void Core::mainLoop(void)
 //				}
 //			}
 //		}
-	}
+

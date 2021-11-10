@@ -8,32 +8,30 @@
 #include "Client.hpp"
 
 
-typedef struct sockaddr_in sockaddr_in;
-typedef struct sockaddr_storage sockaddr_storage;
-
 class Core
 {
 private:
 
-	uint32_t 						_servSize;
-	int 							_sockfd[10];		//TODO make dynamic(server count)
-	pollfd 							_fdset[OPEN_MAX];
-	std::vector<Client> 			_clientList;
-	std::vector<Server>				_servers;
+	uint32_t 							_servSize;
+	int 								_sockfd[10];		//TODO make dynamic(server count)
+	pollfd 								_fdset[OPEN_MAX];
+	std::list<Client> 					_clientList;
+	std::vector<Server>					_servers;
 
 public:
 
-	Core							( Config &config );
-	~Core							( void );
+	Core								( Config &config );
+	~Core								( void );
 
-	void startServ					( void );
+	void startServ						( void );
 
 private:
 
-	bool 		initSocets			( void );
-	void 		mainLoop			( void );
-	void 		acceptCliConnect	( const int sock, Server const & server, int &newSock, nfds_t &numFds);
-
+	bool 		initSocets				( void );
+	void 		mainLoop				( void );
+	bool 		acceptClientConnect		( std::vector<Server>::iterator& it, nfds_t& num );
+	std::string readRequest				( std::list<Client>::iterator &it, nfds_t& num );
+	bool 		sendResponce			( std::list<Client>::iterator &it );
 
 	class CoreException : public std::exception
 	{
@@ -48,4 +46,3 @@ private:
 #endif
 
 //TODO close socket
-//TODO free addrInfo

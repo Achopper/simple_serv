@@ -20,6 +20,7 @@ Server &Server::operator=(const Server &obj)
 	{
 		_servIp = obj._servIp;
 		_listenFd = obj._listenFd;
+		_serverFd = obj._serverFd;
 		_serverName = obj._serverName;
 		_port = obj._port;
 		_addr = obj._addr;
@@ -29,8 +30,7 @@ Server &Server::operator=(const Server &obj)
 
 bool Server::setServIp(std::string const & ip)
 {
-    std::string::const_iterator it;
-	for (it = ip.begin(); it != ip.end() - 1; )
+	for (std::string::const_iterator it = ip.begin(); it != ip.end() - 1; )
 		if (!(std::isdigit(*++it) || *it == '.'))
 			return (false);
 	_servIp = ip;
@@ -72,6 +72,11 @@ void Server::setFd(int const & fd)
 	_listenFd = fd;
 }
 
+void Server::setServerFd(pollfd *fdSet)
+{
+	_serverFd = fdSet;
+}
+
 std::string Server::getServIp() const
 {
 	return (_servIp);
@@ -95,5 +100,10 @@ sockaddr_in Server::getAddr() const
 int Server::getFd() const
 {
 	return _listenFd;
+}
+
+pollfd* Server::getServerFd() const
+{
+	return (_serverFd);
 }
 

@@ -1,8 +1,8 @@
 
 #include "../inc/Client.hpp"
 
-Client::Client (const int &srvFd, Server const & server, pollfd* set)
-: _server(server), _servFd(srvFd), _setFd(set)
+Client::Client (/*const int &srvFd,*/ Server const & server, pollfd* set)
+: _server(server),/* _servFd(srvFd), */_setFd(set)
 {
 }
 
@@ -20,9 +20,9 @@ Client &Client::operator=(const Client &obj)
 	if (this != &obj)
 	{
 		_server = obj._server;
-		_servFd = obj._servFd;
 		_setFd = obj._setFd;
 		_body = obj._body;
+		_req = obj._req;
 	}
 	return (*this);
 }
@@ -42,16 +42,6 @@ void Client::setSetFd( pollfd  *setFd )
 	_setFd = setFd;
 }
 
-int Client::getServFd() const
-{
-	return (_servFd);
-}
-
-//int Client::getCliFd() const
-//{
-//	return (_clientFd);
-//}
-
 std::string Client::getBody() const
 {
 	return (_body);
@@ -65,6 +55,14 @@ std::string Client::getReq(void) const
 pollfd* Client::getSetFd(void) const
 {
 	return (_setFd);
+}
+
+void Client::deleteClient()
+{
+	std::cout << REDCOL"Client " << _setFd->fd  << " disconnected" << RESCOL << std::endl;
+	close(_setFd->fd);
+	_setFd->fd = -1;
+
 }
 
 

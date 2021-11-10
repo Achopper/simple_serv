@@ -6,11 +6,14 @@
 #define DEBUG_MODE 1
 #define REDCOL "\33[31m"
 #define RESCOL "\33[00m"
+#define GREENCOL "\33[32m"
 //#define MAXCLIENTS 1024
 #define PROT HTTP/1.1
 #define TIMEOUT -1
 
 typedef struct pollfd pollfd;
+typedef struct sockaddr_in sockaddr_in;
+typedef struct sockaddr_storage sockaddr_storage;
 
 #include <list>
 #include <vector>

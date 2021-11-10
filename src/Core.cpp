@@ -20,8 +20,80 @@ Core::~Core()
 void Core::startServ()
 {
 	initSocets();
-
 	mainLoop();
+}
+
+bool Core::acceptClientConnect(std::vector<Server>::iterator& iterator, nfds_t& num)
+{
+	int newSock;
+	struct sockaddr_storage their_addr;
+	int addrLen = sizeof their_addr;
+
+	if ((newSock = accept(iterator->getServerFd()->fd, (struct sockaddr *) &their_addr, (socklen_t *) &addrLen)) < 0)
+	{
+		std::cout << REDCOL"Error in accept: " << strerror(errno) << RESCOL << std::endl;
+		throw CoreException();
+	}
+	std::cout << GREENCOL"Client " << newSock << " connected" << RESCOL << std::endl;
+	iterator->getServerFd()->revents &= ~POLLRDNORM;
+	fcntl(newSock, F_SETFL , O_NONBLOCK);
+	for (int j = static_cast<int>(num); j < OPEN_MAX + 1; ++j) {
+		if (j == OPEN_MAX) {
+			std::cerr << "Can't serve more clients. Exit.." << std::endl;
+			break; //TODO exit?
+		}
+		if (_fdset[j].fd < 0) {
+			_fdset[j].fd = newSock;
+			_fdset[j].events = POLLRDNORM;
+			_clientList.push_back(Client(*iterator, &_fdset[j]));
+			num++;
+			break;
+		}
+	}
+	return (true);
+}
+
+std::string Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
+{
+	ssize_t valread;
+	char buf[BUFSIZ] = {0};
+
+	it->getSetFd()->revents &= ~(POLLRDNORM | POLLERR);
+	valread = recv(it->getSetFd()->fd, buf, BUFSIZ, 0);
+	if (valread < 0) {
+		std::cout << REDCOL << strerror(errno) << " no request" << RESCOL << std::endl;
+		it->deleteClient();
+		_clientList.erase(it);
+		num--;
+	} else if (valread == 0) {
+		std::cout << "Connection close by client" << std::endl;
+		it->deleteClient();
+		_clientList.erase(it);
+		num--;
+	}
+	else
+		it->setReq(it->getReq().append(buf, static_cast<size_t>(valread)));
+	return (it->getReq());
+}
+
+bool Core::sendResponce(std::list<Client>::iterator &it)
+{
+	std::string b;
+	std::string line, res;
+	std::ifstream page("simple.html", std::ios::binary);
+
+	if (!page.is_open())
+		std::cout << REDCOL"Cant open" << RESCOL << std::endl;
+	else
+		while (std::getline(page, line))
+			res += line + "\n";
+	page.close();
+	std::string ms;
+	ms += "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + std::to_string(ms.length() +
+			res.length()) + "\n\n" + res;
+	send(it->getSetFd()->fd, ms.c_str(), ms.length(), 0);
+	it->setReq("");
+	return (true);
 }
 
 
@@ -50,38 +122,18 @@ bool Core::initSocets()
 			std::cout << REDCOL"Can't listen socket" << RESCOL << std::endl;
 			throw CoreException();
 		}
-		_servers.at(i).setFd(_sockfd[i]);
+		_servers.at(i).setServerFd(&_fdset[i]);
 		_fdset[i].fd = _sockfd[i];
 		_fdset[i].events = POLLRDNORM;
 	}
 	return (true);
 }
 
-void Core::mainLoop(void) {
+void Core::mainLoop() {
     nfds_t numfds = _servSize;
     int pollRet;
-    int newSock;
-    struct sockaddr_storage their_addr;
-    ssize_t valread;
-    int addrLen = sizeof their_addr;
-    std::string b;
-    char buf[BUFSIZ] = {0};
-    std::string line, res;
-    std::ifstream page("simple.html", std::ios::binary);
-
-
-    if (!page.is_open())
-        std::cout << REDCOL"Cant open" << RESCOL << std::endl;
-    else
-        while (std::getline(page, line))
-            res += line + "\n";
-    page.close();
-    std::string ms;
-    ms += "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + std::to_string(ms.length() +
-                                                                                        res.length()) + "\n\n" + res;
 
     while (true) {
-        bzero(buf,BUFSIZ);
         if ((pollRet = poll(_fdset, numfds, TIMEOUT)) < 0) {
             std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
             throw CoreException();
@@ -90,120 +142,28 @@ void Core::mainLoop(void) {
         {
             std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0] << RESCOL << std::endl;
             close(_fdset[0].fd);
+			_fdset[0].fd = -1;
             return;
         }
-        for (nfds_t i = 0; i < numfds; ++i) {
-            int j = 0;
-            if (_fdset[i].revents & POLLRDNORM) {
-                newSock = accept(_fdset[i].fd, (struct sockaddr *) &their_addr, (socklen_t *) &addrLen);
-                _fdset[i].revents &= ~POLLRDNORM;
-                fcntl(newSock, F_SETFL , O_NONBLOCK);
-                for (j = static_cast<int>(numfds); j < OPEN_MAX; ++j) {
-                    if (_fdset[j].fd < 0) {
-                        _fdset[j].fd = newSock;
-                        _fdset[j].events = POLLRDNORM;
-                        numfds++;
-                        break;
-                    }
-                    if (j == OPEN_MAX) {
-                        std::cerr << "Can't serve more clients. Exit.." << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
-                }
-//				if (j > static_cast<int>(numfds))
-//					numfds = static_cast<nfds_t>(j);
-                if (--pollRet <= 0)
-                    continue;
-            }
-            for (j = (int) _servSize; j < static_cast<int>(numfds); ++j) {
-
-                if ((newSock = _fdset[j].fd) < 0)
-                    continue;
-                if (_fdset[j].revents & (POLLRDNORM | POLLERR)) {
-                    _fdset[j].revents &= ~(POLLRDNORM | POLLERR);
-                    std::cout << _fdset[j].revents << std::endl;
-                    valread = recv(newSock, buf, BUFSIZ, 0);
-                    std::cout << buf << std::endl;
-                    if (valread < 0) {
-                        std::cout << strerror(errno) << REDCOL"no request" << RESCOL << std::endl;
-                        close(newSock);
-                        _fdset[j].fd = -1;
-                        numfds--;
-                    } else if (valread == 0) {
-                        std::cout << "Connection close by client" << std::endl;
-                        close(newSock);
-                        _fdset[j].fd = -1;
-                        numfds--;
-                    }
-//					else
-//					{
-                    send(newSock, ms.c_str(), ms.length(), 0);
-//						close(newSock);
-//						_fdset[j].fd = -1;
-//						numfds--;
-//					}
-                    if (--pollRet <= 0)
-                        break;
+		for(std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
+		{
+            if (it->getServerFd()->revents & POLLRDNORM)
+				acceptClientConnect(it, numfds);
+			for (std::list<Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+			{
+                if (it->getSetFd()->revents & (POLLRDNORM | POLLERR)) {
+					it->setReq(readRequest(it, numfds));
+					std::string::size_type pos = it->getReq().find("\r\n\r\n");
+					if (pos == std::string::npos)
+						continue;
+					std::cout << it->getReq() << std::endl;
+					sendResponce(it);
                 }
             }
         }
     }
 }
-    //
-    //
-//		if ((pollRet = poll(_fdset, numfds, TIMEOUT)) < 0)
-//		{
-//			std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
-//			throw CoreException();
-//		}
-//		if (pollRet == 0) // && connection !keep-alive
-//		{
-//			std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0]  << RESCOL << std::endl;
-//			close(_fdset[0].fd);
-//			return;
-//		}
-//		for (nfds_t i = 0; i < numfds; ++i)
-//		{
-//			if (_fdset[i].revents & POLLIN)
-//			{
-//				std::cout << "POLLIN in fd" << _fdset[i].fd << std::endl;
-//				if (_fdset[i].fd == _servers.at(i).getFd() && _fdset[i].revents != 0)
-//				{
-//					_fdset[i].revents = 0;
-//					if ((newSock = accept(_fdset[i].fd, (struct sockaddr *) &their_addr, (socklen_t *) &addrLen)) < 0)
-//					{
-//						perror("in: acept");
-//						exit(EXIT_FAILURE);
-//					}
-//					fcntl(newSock, F_SETFL | O_NONBLOCK);
-//					if (numfds < OPEN_MAX)
-//					{
-//						_fdset[numfds].fd = newSock;
-//						_fdset[numfds].events = POLLIN;
-//						numfds++;
-//					}
-//					else
-//					{
-//						std::cout << REDCOL"can't serve more clients!" << RESCOL << std::endl;
-//						close(newSock);
-//					}
-//				}
-//				else
-//				{
-//					std::string b;
-//					char buf[BUFSIZ] = {0};
-//					valread = recv(_fdset[i].fd, buf, BUFSIZ, 0);
-//					b = buf;
-//					std::cout << b << std::endl;
-//					if (valread < 0)
-//						std::cout << REDCOL"no request" << RESCOL << std::endl;
-//					std::cout << ms << std::endl;
-//					send(_fdset[i].fd, ms.c_str(), ms.length(), 0);
-//					close(_fdset[i].fd);
-//					_fdset[i].fd = -1;
-//					_fdset[i].events = 0;
-//					numfds--;
-//				}
-//			}
-//		}
+
+
+
 

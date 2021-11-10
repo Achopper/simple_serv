@@ -13,9 +13,11 @@ private:
 
 	sockaddr_in 					_addr;
 	std::string						_servIp;
+	pollfd							*_serverFd;
 	std::string						_serverName;
 	std::string						_port;
-	int 							_listenFd;
+	std::string 					_response;
+	int 							_listenFd; //TODO mb del?
 
 public:
 
@@ -30,12 +32,14 @@ public:
 	void 	setServName				( std::string const & servName);
 	bool 	setAddr					( std::string const &addr, std::string::size_type &pos );
 	void 	setFd					( int const & fd);
+	void 	setServerFd				( pollfd *fdSet );
 
 	std::string		getServIp		( void ) const;
 	std::string 	getPort			( void ) const;
 	std::string 	getServName		( void ) const;
 	sockaddr_in		getAddr			( void ) const;
 	int 			getFd			( void ) const;
+	pollfd *		getServerFd		( void ) const;
 
 };
 

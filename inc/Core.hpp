@@ -13,7 +13,7 @@ class Core
 private:
 
 	uint32_t 							_servSize;
-	int 								_sockfd[10];		//TODO make dynamic(server count)
+	std::vector<int> 					_sockfd;		//TODO make dynamic(server count)
 	pollfd 								_fdset[OPEN_MAX];
 	std::list<Client> 					_clientList;
 	std::vector<Server>					_servers;

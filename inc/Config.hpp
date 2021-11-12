@@ -18,18 +18,22 @@ private:
 	uint32_t 							_servCount;
 
 public:
+
 	Config								( std::string const &conf );
 	Config								( Config const &obj );
 	~Config								( void );
-
 	Config &							operator=( Config const &obj );
-	std::string getErrors				( void ) const;
+
+public:
+
+	std::string 		getErrors		( void ) const;
 	std::vector<Server>	getServers		( void ) const;
-	std::string getConf					( void ) const;
-	uint32_t 	getServCount			( void ) const;
+	std::string 		getConf			( void ) const;
+	uint32_t 			getServCount	( void ) const;
 
 	void		setServer				( Server &server );
 
+public:
 
 	std::string 	readConfig			( std::string const &conf);
 	void 			parseConfig			( void );

@@ -18,12 +18,13 @@ Server &Server::operator=(const Server &obj)
 {
 	if (this != &obj)
 	{
-		_servIp = obj._servIp;
-		_listenFd = obj._listenFd;
-		_serverFd = obj._serverFd;
-		_serverName = obj._serverName;
-		_port = obj._port;
-		_addr = obj._addr;
+		_servIp			= obj._servIp;
+		_serverFd		= obj._serverFd;
+		_serverName		= obj._serverName;
+		_port			= obj._port;
+		_addr			= obj._addr;
+		_root			= obj._root;
+		_response		= obj._response;
 	}
 	return *this;
 }
@@ -67,14 +68,15 @@ bool Server::setAddr(const std::string &addr, unsigned long &pos)
 	return (true);
 }
 
-void Server::setFd(int const & fd)
-{
-	_listenFd = fd;
-}
 
 void Server::setServerFd(pollfd *fdSet)
 {
 	_serverFd = fdSet;
+}
+
+void Server::setRoot(const std::string &root)
+{
+	_root = root;
 }
 
 std::string Server::getServIp() const
@@ -97,13 +99,13 @@ sockaddr_in Server::getAddr() const
 	return (_addr);
 }
 
-int Server::getFd() const
-{
-	return _listenFd;
-}
-
 pollfd* Server::getServerFd() const
 {
 	return (_serverFd);
+}
+
+std::string Server::getRoot() const
+{
+	return (_root);
 }
 

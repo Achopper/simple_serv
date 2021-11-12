@@ -1,8 +1,9 @@
 
 #include "../inc/Client.hpp"
 
-Client::Client (/*const int &srvFd,*/ Server const & server, pollfd* set)
-: _server(server),/* _servFd(srvFd), */_setFd(set)
+Client::Client (Server const & server, pollfd* set)
+: 	_server(server),
+	_setFd(set)
 {
 }
 
@@ -62,7 +63,6 @@ void Client::deleteClient()
 	std::cout << REDCOL"Client " << _setFd->fd  << " disconnected" << RESCOL << std::endl;
 	close(_setFd->fd);
 	_setFd->fd = -1;
-
 }
 
 

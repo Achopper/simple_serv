@@ -7,7 +7,7 @@ Core::Core(Config & config)
 	memset (&_fdset, 0, sizeof(_fdset));
 	for (int i = 0; i < OPEN_MAX; ++i)
 		_fdset[i].fd = -1;
-	memset (&_sockfd, 0, sizeof(_sockfd));
+	//memset (&_sockfd, 0, sizeof(_sockfd));
 	_servSize = config.getServCount();
 	_servers = config.getServers();
 }
@@ -80,7 +80,7 @@ bool Core::sendResponce(std::list<Client>::iterator &it)
 {
 	std::string b;
 	std::string line, res;
-	std::ifstream page("simple.html", std::ios::binary);
+	std::ifstream page("html/simple.html", std::ios::binary);
 
 	if (!page.is_open())
 		std::cout << REDCOL"Cant open" << RESCOL << std::endl;
@@ -103,27 +103,29 @@ bool Core::initSocets()
 
 	for (uint32_t i = 0; i < _servSize; ++i)
 	{
+		int sock;
 		sockaddr_in addr = _servers.at(i).getAddr();
-		if ((_sockfd[i] = socket(addr.sin_family, SOCK_STREAM, 0)) < 0)
+		if ((sock = socket(addr.sin_family, SOCK_STREAM, 0)) < 0)
 		{
 			std::cout << REDCOL"cant create socket" << RESCOL << std::endl;
 			throw CoreException();
 		}
-		setsockopt(_sockfd[i], SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
-		fcntl(_sockfd[i], F_SETFL , O_NONBLOCK);
+		_sockfd.push_back(sock);
+		setsockopt(_sockfd.at(i), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
+		fcntl(_sockfd.at(i), F_SETFL , O_NONBLOCK);
 
-		if (bind(_sockfd[i], (struct sockaddr *) &addr, sizeof(addr)) < 0)
+		if (bind(_sockfd.at(i), (struct sockaddr *) &addr, sizeof(addr)) < 0)
 		{
 			std::cout << REDCOL"Can't bind socket" << RESCOL << std::endl;
 			throw CoreException();
 		}
-		if (listen(_sockfd[i], SOMAXCONN))
+		if (listen(_sockfd.at(i), SOMAXCONN))
 		{
 			std::cout << REDCOL"Can't listen socket" << RESCOL << std::endl;
 			throw CoreException();
 		}
 		_servers.at(i).setServerFd(&_fdset[i]);
-		_fdset[i].fd = _sockfd[i];
+		_fdset[i].fd = _sockfd.at(i);
 		_fdset[i].events = POLLRDNORM;
 	}
 	return (true);
@@ -147,21 +149,21 @@ void Core::mainLoop() {
         }
 		for(std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
 		{
-            if (it->getServerFd()->revents & POLLRDNORM)
+			if (it->getServerFd()->revents & POLLRDNORM)
 				acceptClientConnect(it, numfds);
 			for (std::list<Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
 			{
-                if (it->getSetFd()->revents & (POLLRDNORM | POLLERR)) {
+				if (it->getSetFd()->revents & (POLLRDNORM | POLLERR)) {
 					it->setReq(readRequest(it, numfds));
 					std::string::size_type pos = it->getReq().find("\r\n\r\n");
 					if (pos == std::string::npos)
 						continue;
 					std::cout << it->getReq() << std::endl;
 					sendResponce(it);
-                }
-            }
-        }
-    }
+				}
+			}
+		}
+	}
 }
 
 

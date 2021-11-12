@@ -90,7 +90,7 @@ std::vector<std::string> Config::preParse(std::string const &toParse)
 		if (end != std::string::npos)
 		{
 			if (start != end)
-				_conf = toParse.substr(start, end - start);
+				_conf += toParse.substr(start, end - start);
 			end = toParse.find(commEnd, end);
 			if (end == std::string::npos)
 				break;
@@ -98,7 +98,7 @@ std::vector<std::string> Config::preParse(std::string const &toParse)
 		else
 		{
 			end = toParse.length();
-			_conf = toParse.substr(start, end - start);
+			_conf += toParse.substr(start, end - start);
 			break;
 		}
 		start = end;
@@ -180,6 +180,12 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 			if (!checkSemicolon(++word))
 				return (false);
 			server.setServName((word)->substr(0, word->length() - 1));
+		}
+		else if (*word == "root")
+		{
+			if (!checkSemicolon(++word))
+				return (false);
+			server.setRoot((word)->substr(0, word->length() - 1));
 		}
 		else if (*word == "}")
 		{

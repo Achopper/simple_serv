@@ -135,25 +135,27 @@ void Core::mainLoop() {
     nfds_t numfds = _servSize;
     int pollRet;
 
-    while (true) {
-        if ((pollRet = poll(_fdset, numfds, TIMEOUT)) < 0) {
-            std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
-            throw CoreException();
-        }
-        if (pollRet == 0) // && connection !keep-alive
+	while (true) {
+		if ((pollRet = poll(_fdset, numfds, TIMEOUT)) < 0)
+		{
+			std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
+			throw CoreException();
+		}
+		if (pollRet == 0) // && connection !keep-alive
         {
-            std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0] << RESCOL << std::endl;
-            close(_fdset[0].fd);
+			std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0] << RESCOL << std::endl;
+			close(_fdset[0].fd);
 			_fdset[0].fd = -1;
-            return;
-        }
+			return;
+		}
 		for(std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
 		{
 			if (it->getServerFd()->revents & POLLRDNORM)
 				acceptClientConnect(it, numfds);
 			for (std::list<Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
 			{
-				if (it->getSetFd()->revents & (POLLRDNORM | POLLERR)) {
+				if (it->getSetFd()->revents & (POLLRDNORM | POLLERR))
+				{
 					it->setReq(readRequest(it, numfds));
 					std::string::size_type pos = it->getReq().find("\r\n\r\n");
 					if (pos == std::string::npos)

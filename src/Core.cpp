@@ -7,7 +7,6 @@ Core::Core(Config & config)
 	memset (&_fdset, 0, sizeof(_fdset));
 	for (int i = 0; i < OPEN_MAX; ++i)
 		_fdset[i].fd = -1;
-	//memset (&_sockfd, 0, sizeof(_sockfd));
 	_servSize = config.getServCount();
 	_servers = config.getServers();
 }
@@ -28,7 +27,6 @@ bool Core::acceptClientConnect(std::vector<Server>::iterator& iterator, nfds_t& 
 	int newSock;
 	struct sockaddr_storage their_addr;
 	int addrLen = sizeof their_addr;
-
 	if ((newSock = accept(iterator->getServerFd()->fd, (struct sockaddr *) &their_addr, (socklen_t *) &addrLen)) < 0)
 	{
 		std::cout << REDCOL"Error in accept: " << strerror(errno) << RESCOL << std::endl;
@@ -141,12 +139,15 @@ void Core::mainLoop() {
 			std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
 			throw CoreException();
 		}
-		if (pollRet == 0) // && connection !keep-alive
-        {
+		if (pollRet == 0)
+		{
 			std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0] << RESCOL << std::endl;
+			_sockfd.erase(_sockfd.begin());
 			close(_fdset[0].fd);
 			_fdset[0].fd = -1;
-			return;
+			if (_sockfd.empty())
+				return;
+			continue;
 		}
 		for(std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
 		{
@@ -154,6 +155,13 @@ void Core::mainLoop() {
 				acceptClientConnect(it, numfds);
 			for (std::list<Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
 			{
+				if (std::difftime(std::time(nullptr), it->getConTime()) > CLI_TIMEOUT_SEC)
+				{
+					it->deleteClient();
+					//TODO add time_out responce
+					_clientList.erase(it);
+					continue;
+				}
 				if (it->getSetFd()->revents & (POLLRDNORM | POLLERR))
 				{
 					it->setReq(readRequest(it, numfds));

@@ -3,7 +3,10 @@
 
 Client::Client (Server const & server, pollfd* set)
 : 	_server(server),
-	_setFd(set)
+	_setFd(set),
+	_body(""),
+	_req(""),
+	_connectTime (std::time(nullptr))
 {
 }
 
@@ -24,6 +27,7 @@ Client &Client::operator=(const Client &obj)
 		_setFd = obj._setFd;
 		_body = obj._body;
 		_req = obj._req;
+		_connectTime = obj._connectTime;
 	}
 	return (*this);
 }
@@ -43,6 +47,11 @@ void Client::setSetFd( pollfd  *setFd )
 	_setFd = setFd;
 }
 
+void Client::setConnTime()
+{
+	_connectTime = std::time(nullptr);
+}
+
 std::string Client::getBody() const
 {
 	return (_body);
@@ -56,6 +65,11 @@ std::string Client::getReq(void) const
 pollfd* Client::getSetFd(void) const
 {
 	return (_setFd);
+}
+
+time_t Client::getConTime() const
+{
+	return (_connectTime);
 }
 
 void Client::deleteClient()

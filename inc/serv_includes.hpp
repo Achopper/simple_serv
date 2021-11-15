@@ -10,6 +10,7 @@
 //#define MAXCLIENTS 1024
 #define PROT HTTP/1.1
 #define TIMEOUT -1
+#define CLI_TIMEOUT_SEC 20
 
 typedef struct pollfd pollfd;
 typedef struct sockaddr_in sockaddr_in;

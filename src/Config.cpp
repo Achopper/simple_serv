@@ -164,7 +164,7 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 			pos = (++word)->find(':', 0);
 			if (pos == std::string::npos)
 			{
-				_err.append("Wrong host adress: " + *word);
+				_err.append(REDCOL"Wrong host adress: " + *word + RESCOL);
 				return (false);
 			}
 			if (!checkSemicolon(word))

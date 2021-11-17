@@ -11,6 +11,21 @@ class Client
 
 private:
 
+	bool									_isUrlSet;
+	bool									_isMetodSet;
+	bool									_isHttpVerSet;
+	bool									_isFirstLineSet;
+
+	std::string								_method;
+	std::string								_url;
+	std::string								_httpVersion;
+	//std::map<std::string, std::string>	headers; // header -> content
+	std::string								_reqBody;
+	std::string 							_queryString;
+	std::string								_buf;
+	//Response				_resp
+
+	// Parser					_parser();
 	Server					_server;
 	pollfd					*_setFd;
 	std::string				_body;
@@ -32,14 +47,28 @@ public:
 	std::string getBody		( void ) const;
 	std::string getReq		( void ) const;
 	pollfd* getSetFd		( void ) const;
+	
 
 public:
-	void deleteClient		( void );
+	void 	deleteClient	( void );
 
+public:
 
+	void					setUrl();
+	void					setBuf();
+	void					setReqBody();
+	void					setMethod();
+	void					setHttpVersion();
+	void					setQueryString();
 
+	std::string				getUrl();
+	std::string				getBuf();
+	std::string				getReqBody();
+	std::string				getMethod();
+	std::string				getHttpVersion();
+	std::string				getQueryString();
 
-
+	void					parseReq();
 
 
 };

@@ -133,7 +133,8 @@ bool Core::initSocets()
 
 void Core::mainLoop() {
     nfds_t numfds = _servSize;
-    int pollRet;
+	int pollRet;
+	// Parser parser();
 
 	while (true) {
 		if ((pollRet = poll(_fdset, numfds, TIMEOUT)) < 0)
@@ -160,7 +161,9 @@ void Core::mainLoop() {
 					std::string::size_type pos = it->getReq().find("\r\n\r\n");
 					if (pos == std::string::npos)
 						continue;
-					std::cout << it->getReq() << std::endl;
+
+					it->parseReq();
+					// std::cout << it->getReq() << std::endl;
 					sendResponce(it);
 				}
 			}

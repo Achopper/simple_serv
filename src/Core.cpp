@@ -51,47 +51,53 @@ bool Core::acceptClientConnect(std::vector<Server>::iterator& iterator, nfds_t& 
 	return (true);
 }
 
-std::string Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
+void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 {
 	ssize_t valread;
 	char buf[BUFSIZ] = {0};
 
 	it->getSetFd()->revents &= ~(POLLRDNORM | POLLERR);
-	valread = recv(it->getSetFd()->fd, buf, BUFSIZ, 0);
-	if (valread < 0) {
+	valread = recv(it->getSetFd()->fd, buf, DEF_CLI_MAX_BDY_SZ, 0);
+	it->setConnTime();
+	if (valread < 0)
+	{
 		std::cout << REDCOL << strerror(errno) << " no request" << RESCOL << std::endl;
 		it->deleteClient();
-		_clientList.erase(it);
-		num--;
-	} else if (valread == 0) {
-		std::cout << "Connection close by client" << std::endl;
-		it->deleteClient();
-		_clientList.erase(it);
+		it = _clientList.erase(it);
 		num--;
 	}
-	else
+	else if (valread == 0) {
+		std::cout << "Connection close by client" << std::endl;
+		it->deleteClient();
+		it = _clientList.erase(it);
+		num--;
+	}
+	else if (valread > 0)
 		it->setReq(it->getReq().append(buf, static_cast<size_t>(valread)));
-	return (it->getReq());
+	else
+		return ;
 }
 
-bool Core::sendResponce(std::list<Client>::iterator &it)
+bool Core::sendResponce(std::list<Client>::iterator &it, nfds_t& num)
 {
-	std::string b;
-	std::string line, res;
-	std::ifstream page("html/simple.html", std::ios::binary);
+		std::string b;
+		std::string line, res;
+		std::ifstream page("html/simple.html", std::ios::binary);
 
-	if (!page.is_open())
-		std::cout << REDCOL"Cant open" << RESCOL << std::endl;
-	else
-		while (std::getline(page, line))
-			res += line + "\n";
-	page.close();
-	std::string ms;
-	ms += "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + std::to_string(ms.length() +
-			res.length()) + "\n\n" + res;
-	send(it->getSetFd()->fd, ms.c_str(), ms.length(), 0);
-	it->setReq("");
-	return (true);
+		if (!page.is_open())
+			std::cout << REDCOL"Cant open" << RESCOL << std::endl;
+		else
+			while (std::getline(page, line))
+				res += line + "\n";
+		page.close();
+		std::string ms;
+		ms += "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + std::to_string(ms.length() +
+				res.length()) + "\n\n" + res;
+		send(it->getSetFd()->fd, ms.c_str(), ms.length(), 0);
+		it->deleteClient();
+		it = _clientList.erase(it);
+		num--;
+		return (true);
 }
 
 
@@ -153,24 +159,31 @@ void Core::mainLoop() {
 		{
 			if (it->getServerFd()->revents & POLLRDNORM)
 				acceptClientConnect(it, numfds);
-			for (std::list<Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+		}
+		for (std::list<Client>::iterator cli_it = _clientList.begin(); cli_it != _clientList.end(); ++cli_it)
+		{
+			if (cli_it->getSetFd()->revents & (POLLRDNORM | POLLERR))
 			{
-				if (std::difftime(std::time(nullptr), it->getConTime()) > CLI_TIMEOUT_SEC)
-				{
-					it->deleteClient();
-					//TODO add time_out responce
-					_clientList.erase(it);
+				if (!cli_it->getFinishReadReq())
+					readRequest(cli_it, numfds);
+				std::string::size_type pos = cli_it->getReq().find("\r\n\r\n");
+				if (pos == std::string::npos)
 					continue;
-				}
-				if (it->getSetFd()->revents & (POLLRDNORM | POLLERR))
-				{
-					it->setReq(readRequest(it, numfds));
-					std::string::size_type pos = it->getReq().find("\r\n\r\n");
-					if (pos == std::string::npos)
-						continue;
-					std::cout << it->getReq() << std::endl;
-					sendResponce(it);
-				}
+				else
+					cli_it->setFinishReadReq(true);
+			}
+			if (cli_it->getFinishReadReq())
+			{
+				std::cout << cli_it->getReq() << std::endl;
+				sendResponce(cli_it, numfds);
+			}
+			if (std::difftime(std::time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
+			{
+				std::cout << REDCOL"Client " << cli_it->getSetFd()->fd  << " disconnected by timeout" << RESCOL <<
+						  std::endl;
+				cli_it->deleteClient();
+				//TODO add time_out response
+				cli_it = _clientList.erase(cli_it);
 			}
 		}
 	}

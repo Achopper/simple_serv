@@ -6,7 +6,8 @@ Client::Client (Server const & server, pollfd* set)
 	_setFd(set),
 	_body(""),
 	_req(""),
-	_connectTime (std::time(nullptr))
+	_connectTime (std::time(nullptr)),
+	_finishReadReq(false)
 {
 }
 
@@ -28,6 +29,7 @@ Client &Client::operator=(const Client &obj)
 		_body = obj._body;
 		_req = obj._req;
 		_connectTime = obj._connectTime;
+		_finishReadReq = obj._finishReadReq;
 	}
 	return (*this);
 }
@@ -74,9 +76,18 @@ time_t Client::getConTime() const
 
 void Client::deleteClient()
 {
-	std::cout << REDCOL"Client " << _setFd->fd  << " disconnected" << RESCOL << std::endl;
 	close(_setFd->fd);
 	_setFd->fd = -1;
+}
+
+void Client::setFinishReadReq(bool isFinish)
+{
+	_finishReadReq = isFinish;
+}
+
+bool Client::getFinishReadReq(void) const
+{
+	return (_finishReadReq);
 }
 
 

@@ -7,9 +7,6 @@
 #include "Server.hpp"
 #include "Location.hpp"
 
-class Server;
-
-
 class Config
 {
 private:

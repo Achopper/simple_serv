@@ -1,5 +1,6 @@
 
 #include "../inc/Client.hpp"
+#include "../inc/Response.hpp"
 
 Client::Client (Server const & server, pollfd* set)
 : 	_server(server),
@@ -54,6 +55,11 @@ void Client::setConnTime()
 	_connectTime = std::time(nullptr);
 }
 
+void Client::setResponse(Response &response)
+{
+	_response = &response;
+}
+
 std::string Client::getBody() const
 {
 	return (_body);
@@ -74,12 +80,6 @@ time_t Client::getConTime() const
 	return (_connectTime);
 }
 
-void Client::deleteClient()
-{
-	close(_setFd->fd);
-	_setFd->fd = -1;
-}
-
 void Client::setFinishReadReq(bool isFinish)
 {
 	_finishReadReq = isFinish;
@@ -89,6 +89,32 @@ bool Client::getFinishReadReq(void) const
 {
 	return (_finishReadReq);
 }
+
+const Server &Client::getServer() const
+{
+	return (_server);
+}
+
+void Client::deleteClient()
+{
+	close(_setFd->fd);
+	_setFd->fd = -1;
+}
+
+void Client::makeResponse(Response &response)
+{
+	if (response.getMethod() == "GET")
+		response.GET(*this);
+	//esle if ("POST")
+
+}
+
+const Response *Client::getResponse(void) const
+{
+	return (_response);
+}
+
+
 
 
 

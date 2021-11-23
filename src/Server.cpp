@@ -1,7 +1,10 @@
 
 #include "../inc/Server.hpp"
 
-Server::Server(void) : _servIp(""), _serverName(""), _port("")
+Server::Server() :
+_servIp(""),
+_serverName(""),
+_port("")
 {
 }
 
@@ -24,7 +27,6 @@ Server &Server::operator=(const Server &obj)
 		_port			= obj._port;
 		_addr			= obj._addr;
 		_root			= obj._root;
-		_response		= obj._response;
 		_locList		= obj._locList;
 	}
 	return *this;
@@ -77,7 +79,7 @@ void Server::setServerFd(pollfd *fdSet)
 
 bool Server::setRoot(const std::string &root)
 {
-	if (root.substr(0, 2) != "./")
+	if (root[0] != '.')
 		return (false);
 	_root = root;
 	return (true);

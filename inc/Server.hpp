@@ -5,9 +5,6 @@
 #include "serv_includes.hpp"
 #include "Location.hpp"
 
-typedef struct sockaddr_in sockaddr_in;
-
-
 class Server
 {
 private:
@@ -18,7 +15,6 @@ private:
 	std::string									_serverName;
 	std::string									_port;
 	std::string 								_root;
-	std::string 								_response;
 	std::vector<Location>						_locList;
 
 public:
@@ -47,7 +43,6 @@ public:
 	std::string 	getRoot						( void ) const;
 	const std::vector<Location> & getLocList	( void ) const;
 
-public:
 
 };
 

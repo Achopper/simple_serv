@@ -6,6 +6,7 @@
 #include "serv_includes.hpp"
 #include "Config.hpp"
 #include "Client.hpp"
+#include "Response.hpp"
 
 
 class Core

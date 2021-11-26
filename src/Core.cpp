@@ -134,7 +134,6 @@ bool Core::initSocets()
 void Core::mainLoop() {
     nfds_t numfds = _servSize;
 	int pollRet;
-	// Parser parser();
 
 	while (true) {
 		if ((pollRet = poll(_fdset, numfds, TIMEOUT)) < 0)
@@ -158,13 +157,20 @@ void Core::mainLoop() {
 				if (it->getSetFd()->revents & (POLLRDNORM | POLLERR))
 				{
 					it->setReq(readRequest(it, numfds));
+
+					it->setRequest(it->getReq());
+					// for (std::map<std::string, std::string>::iterator it = it_headersMap.begin(); it != _headersMap.end(); ++it)
+					// 	std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;
+					std::cout << "_method " 		<< it->getRequest().getMethod() << std::endl ;
+					std::cout << "_url " 			<< it->getRequest().getUrl() << std::endl ;
+					std::cout << "_httpVersion "	<< it->getRequest().getHttpVersion() << std::endl ;
+					std::cout << std::endl ;
+
 					std::string::size_type pos = it->getReq().find("\r\n\r\n");
 					if (pos == std::string::npos)
 						continue;
 
-					it->parseReq();
-					// std::cout << it->getReq() << std::endl;
-					sendResponce(it);
+					// sendResponce(it);
 				}
 			}
 		}
@@ -172,5 +178,5 @@ void Core::mainLoop() {
 }
 
 
-
+  
 

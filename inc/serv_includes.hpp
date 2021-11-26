@@ -8,7 +8,7 @@
 #define RESCOL "\33[00m"
 #define GREENCOL "\33[32m"
 
-#define PROT HTTP/1.1
+#define PROT "HTTP/1.1"
 #define TIMEOUT -1
 #define CLI_TIMEOUT_SEC 20
 #define DEF_CLI_MAX_BDY_SZ 16*1024

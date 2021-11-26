@@ -28,6 +28,7 @@ Server &Server::operator=(const Server &obj)
 		_addr			= obj._addr;
 		_root			= obj._root;
 		_locList		= obj._locList;
+		_errorPages		= obj._errorPages;
 	}
 	return *this;
 }
@@ -95,6 +96,19 @@ void Server::setLocList(const Location &location)
 	_locList.push_back(location);
 }
 
+bool Server::setErrorPage(const std::string &address, const std::string &code, std::string & error)
+{
+
+	for (std::string::const_iterator it = code.begin(); it != code.end(); ++it)
+		if (!std::isdigit(*it) || code.length() != 3)
+		{
+			error.append(REDCOL"Wrong error code address \n" RESCOL);
+			return (false);
+		}
+	_errorPages.insert(std::pair<std::string, std::string>(code, address));
+	return (true);
+}
+
 std::string Server::getServIp() const
 {
 	return (_servIp);
@@ -128,6 +142,11 @@ std::string Server::getRoot() const
 const std::vector<Location> & Server::getLocList() const
 {
 	return (_locList);
+}
+
+const std::map<std::string, std::string>& Server::getErrPage() const
+{
+	return (_errorPages);
 }
 
 

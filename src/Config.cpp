@@ -180,6 +180,13 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 			!server.setRoot((word)->substr(0, word->length() - 1)))
 				_err.append(REDCOL"Wrong root adress \n" RESCOL);
 		}
+		else if (*word == "error_page")
+		{
+			std::string code = *++word;
+			if (!checkSemicolon(++word) ||
+				!server.setErrorPage((word)->substr(0, word->length() - 1), code, _err))
+				_err.append(REDCOL"Wrong errorPage adress \n" RESCOL);
+		}
 		else if (*word == "}")
 		{
 			*++word;

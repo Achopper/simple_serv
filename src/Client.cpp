@@ -31,6 +31,7 @@ Client &Client::operator=(const Client &obj)
 		_req = obj._req;
 		_connectTime = obj._connectTime;
 		_finishReadReq = obj._finishReadReq;
+		_response = obj._response;
 	}
 	return (*this);
 }
@@ -106,6 +107,10 @@ void Client::makeResponse(Response &response)
 	if (response.getMethod() == "GET")
 		response.GET(*this);
 	//esle if ("POST")
+	response.fillResponse();
+
+	std::cout << _response->getResp() << std::endl;
+
 
 }
 

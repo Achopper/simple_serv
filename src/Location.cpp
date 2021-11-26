@@ -34,12 +34,12 @@ Location &Location::operator=(const Location &obj)
 
 bool Location::setPath(const std::string &path)
 {
-	if (path[0] != '/')
+	if (path[0] != '/' || path[path.length() - 1] != '/')
 	{
-		std::cout << REDCOL"Location block must start with '/'" << RESCOL << std::endl;
+		std::cout << REDCOL"Location block must start and end with '/'" << RESCOL << std::endl;
 		return (false);
 	}
-	_path = path;
+	path.length() > 1 ? _path = path.substr(0, path.length() - 1) : _path = path;
 	return (true);
 }
 

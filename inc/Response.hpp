@@ -14,32 +14,46 @@ class Response
 {
 private:
 
-	std::string 						_code;
-	std::string 						_response;
-	std::string							_body;
-	std::string							_method;
+	std::string 										_code;
+	std::string 										_response;
+	std::string											_body;
+	std::string											_method;
+	Client												_client;
+	static std::map<std::string, std::string> 			_statusCodes;
+	static std::map<std::string, std::string> 			_contentType;
+
+
+private:
+
+	static std::map<std::string, std::string>setStatusCode	( void );
+	static std::map<std::string, std::string>setContentType	( void );
 
 public:
 
-	Response							( std::string &method );
-	Response							( Response const & obj );
-	~Response							( void );
+	Response											( std::string &method,Client & client );
+	Response											( Response const & obj );
+	~Response											( void );
 
-	Response &							operator=( Response const & obj );
+	Response &											operator=( Response const & obj );
 
 public:
 
-	bool 		setResp					( std::string const & response );
-	bool 		setBody					( std::string const & body );
-	void 		setCode					( std::string const & code );
+	bool 		setResp									( std::string const & response );
+	bool 		setBody									( std::string const & body );
+	void 		setCode									( std::string const & code );
 
-	const std::string & getResp			(void ) const;
-	std::string			getCode			( void ) const;
-	const std::string &	getBody			( void ) const;
-	std::string			getMethod		( void ) const;
+	const std::string & getResp							( void ) const;
+	std::string			getCode							( void ) const;
+	const std::string &	getBody							( void ) const;
+	std::string			getMethod						( void ) const;
 
-	bool 		GET						( Client & client);
-	bool 		getPage					( std::string const & path );
+	void 		addCodetoResp							( std::string const &code );
+	void 		addContentLen							( std::string::size_type const &len );
+	void 		addContentType							( std::string const & filePath );
+
+	bool 		GET										( Client & client);
+	bool 		getPage									( std::string const & path );
+	void 		fillResponse							( void );
 
 
 

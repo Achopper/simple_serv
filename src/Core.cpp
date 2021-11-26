@@ -85,6 +85,8 @@ bool Core::sendResponce(std::list<Client>::iterator &it, nfds_t& num)
 	it->deleteClient();
 	it = _clientList.erase(it);
 	num--;
+	if (it == _clientList.end())
+		it = _clientList.begin();
 	return (true);
 }
 
@@ -150,6 +152,9 @@ void testParse(std::string const & req, std::list<Client>::iterator it) //TODO t
 		tok[0] == '/' ? it->path = tok : it->method = tok;
 		start = end + 1;
 	}
+	if (it->path.length() > 1 && it->path[it->path.length() - 1] == '/')
+		it->path = it->path.substr(0, it->path.length() - 1);
+
 }
 
 
@@ -195,12 +200,13 @@ void Core::mainLoop() {
 			{
 				testParse(cli_it->getReq(), cli_it);//TODO Test part
 				std::cout << cli_it->getReq() << std::endl;
-				Response response(cli_it->method);
+				Response response(cli_it->method, *cli_it);
 				cli_it->setResponse(response);
 				cli_it->makeResponse(response);
 				sendResponce(cli_it, numfds);
 			}
-			if (std::difftime(std::time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
+
+			if ( !_clientList.empty() && std::difftime(std::time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
 			{
 				std::cout << REDCOL"Client " << cli_it->getSetFd()->fd  << " disconnected by timeout" << RESCOL <<
 						  std::endl;

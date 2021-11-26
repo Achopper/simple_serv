@@ -1,11 +1,37 @@
 
 #include "../inc/Response.hpp"
 
-Response::Response(std::string &method) : _method(method)
+std::map<std::string, std::string> Response::setStatusCode()
+{
+	std::map<std::string, std::string> res;
+	res.insert(std::pair<std::string, std::string>("100", "Continue"));
+	res.insert(std::pair<std::string, std::string>("200", "OK"));
+
+	res.insert(std::pair<std::string, std::string>("403", "Forbidden"));
+	res.insert(std::pair<std::string, std::string>("404", "Not Found"));
+
+
+	return (res);
+}
+
+std::map<std::string, std::string> Response::setContentType()
+{
+	std::map<std::string, std::string> res;
+
+	res["html"] = "text/html";
+	res["ico"] = "image/x-icon";
+
+	return (res);
+}
+
+std::map<std::string, std::string>Response::_statusCodes = Response::setStatusCode();
+std::map<std::string, std::string>Response::_contentType = Response::setContentType();
+
+Response::Response(std::string &method, Client & client) : _method(method), _client(client)
 {
 }
 
-Response::Response(const Response &obj)
+Response::Response(const Response &obj) : _client(obj._client)
 {
 	*this = obj;
 }
@@ -21,6 +47,9 @@ Response &Response::operator=(const Response &obj)
 	{
 		_response = obj._response;
 		_body = obj._body;
+		_code = obj._code;
+		_method = obj._method;
+		_client = obj._client;
 	}
 	return (*this);
 }
@@ -62,20 +91,53 @@ std::string Response::getMethod() const
 	return (_method);
 }
 
+void Response::addCodetoResp(const std::string &code)
+{
+
+	_response = PROT " " + code + " " + _statusCodes[code] + "\r\n";
+}
+
+void Response::addContentLen(const std::string::size_type &len)
+{
+	_response.append("Content-Length: " + std::to_string(len) + "\r\n\r\n");
+}
+
+void Response::addContentType(std::string const & filePath)
+{
+	std::string::size_type pos = filePath.find('.');
+	_response.append("Content-Type: " + _contentType[filePath.substr(pos + 1, filePath.length())] + "\r\n");
+}
+
+void Response::fillResponse()
+{
+	std::map<std::string, std::string> er = _client.getServer().getErrPage();
+	addCodetoResp(_code);
+	if (_code.at(0) == '4' && er.count(_code) > 0)
+		getPage(_client.getServer().getRoot() + er[_code]);
+	addContentType(".html");
+
+
+	addContentLen(_body.length());
+
+	_response += _body;
+}
+
 bool Response::getPage(std::string const &path)
 {
-	std::string line, res;
+	std::string line;
 	std::ifstream page(path, std::ios::binary);
 	if (!page.is_open())
 	{
 		std::cout << REDCOL"Cant open" << RESCOL << std::endl;
+		_code = "404";
 		return (false);
 	}
 	else
+	{
+		_code = "200";
 		while (std::getline(page, line))
-			res += line + "\n";
-	_response += "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + std::to_string(_response.length() +
-			res.length()) + "\n\n" + res;
+			_body += line + "\n";
+	}
 	page.close();
 	return true;
 }
@@ -87,12 +149,14 @@ bool Response::GET(Client &client)
 	const std::vector<Location> & loclist = server.getLocList();
 	for (std::vector<Location>::const_iterator it = loclist.begin(); it != loclist.end(); ++it)
 	{
-		if (it->getPath() == client.path)
+		if (client.path == it->getPath())
 		{
-			getPage(server.getRoot() + it->getRoot() + "/" + it->getIndex());
+			if (!getPage(server.getRoot() + it->getRoot() + "/" + it->getIndex()))
+				return (false);
 			return (true);
 		}
 	}
+	_code = "404";
 	return (false);
 }
 

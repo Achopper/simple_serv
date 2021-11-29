@@ -32,6 +32,8 @@ Client &Client::operator=(const Client &obj)
 		_connectTime = obj._connectTime;
 		_finishReadReq = obj._finishReadReq;
 		_response = obj._response;
+		path = obj.path; //TODO del
+		method = obj.method; //TODO del
 	}
 	return (*this);
 }

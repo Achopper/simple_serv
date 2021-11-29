@@ -9,6 +9,7 @@ std::map<std::string, std::string> Response::setStatusCode()
 
 	res.insert(std::pair<std::string, std::string>("403", "Forbidden"));
 	res.insert(std::pair<std::string, std::string>("404", "Not Found"));
+	res.insert(std::pair<std::string, std::string>("413", "Payload Too Large"));
 
 
 	return (res);
@@ -93,7 +94,6 @@ std::string Response::getMethod() const
 
 void Response::addCodetoResp(const std::string &code)
 {
-
 	_response = PROT " " + code + " " + _statusCodes[code] + "\r\n";
 }
 
@@ -104,19 +104,23 @@ void Response::addContentLen(const std::string::size_type &len)
 
 void Response::addContentType(std::string const & filePath)
 {
-	std::string::size_type pos = filePath.find('.');
-	_response.append("Content-Type: " + _contentType[filePath.substr(pos + 1, filePath.length())] + "\r\n");
+	std::string fpath = filePath;
+	std::string::size_type pos = fpath.find('.');
+	if (pos == std::string::npos)
+		fpath = "html";
+	_response.append("Content-Type: " + _contentType[fpath.substr(pos + 1, fpath.length())] + "\r\n");
 }
 
 void Response::fillResponse()
 {
+	DefErrorPage page;
 	std::map<std::string, std::string> er = _client.getServer().getErrPage();
 	addCodetoResp(_code);
 	if (_code.at(0) == '4' && er.count(_code) > 0)
 		getPage(_client.getServer().getRoot() + er[_code]);
-	addContentType(".html");
-
-
+	else if (_code.at(0) == '4')
+		_body = page.makePage(_code, _statusCodes[_code], _client.getServer().getServName());
+	addContentType(_client.path);
 	addContentLen(_body.length());
 
 	_response += _body;
@@ -124,6 +128,7 @@ void Response::fillResponse()
 
 bool Response::getPage(std::string const &path)
 {
+	_body = "";
 	std::string line;
 	std::ifstream page(path, std::ios::binary);
 	if (!page.is_open())
@@ -153,6 +158,11 @@ bool Response::GET(Client &client)
 		{
 			if (!getPage(server.getRoot() + it->getRoot() + "/" + it->getIndex()))
 				return (false);
+			if (_body.length() > it->getClientSize())
+			{
+				_code = "413";
+				return (false);
+			}
 			return (true);
 		}
 	}

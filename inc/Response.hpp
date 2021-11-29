@@ -6,9 +6,11 @@
 #include "serv_includes.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
+#include "DefErrorPage.hpp"
 
 class Client;
 class Server;
+//class DefErrorPage;
 
 class Response
 {
@@ -21,6 +23,7 @@ private:
 	Client												_client;
 	static std::map<std::string, std::string> 			_statusCodes;
 	static std::map<std::string, std::string> 			_contentType;
+
 
 
 private:

@@ -135,38 +135,6 @@ bool Core::initSocets()
 	return (true);
 }
 
-//void testParse(std::string const & req, std::list<Client>::iterator it) //TODO test
-//{
-//	std::vector<std::string> splitRequest;
-//	for (std::string::size_type start = 0, end = 0; start != req.length();)
-//	{
-//		end = req.find("\r\n", start);
-//		if (end == std::string::npos)
-//		{
-//			splitRequest.push_back(req.substr(start, req.length()));
-//			break;
-//		}
-//		std::string tok = req.substr(start,end - start);
-//		splitRequest.push_back(tok);
-//		start = end + 2;
-//	}
-//	for (std::string::size_type start = 0, end = 0; start != splitRequest.at(0).length();)
-//	{
-//		end = splitRequest.at(0).find(' ', start);
-//		if (end == std::string::npos)
-//		{
-//			it->prot = (splitRequest.at(0).substr(start, splitRequest.at(0).length()));
-//			break;
-//		}
-//		std::string tok = splitRequest.at(0).substr(start,end - start);
-//		tok[0] == '/' ? it->path = tok : it->method = tok;
-//		start = end + 1;
-//	}
-//	if (it->path.length() > 1 && it->path[it->path.length() - 1] == '/')
-//		it->path = it->path.substr(0, it->path.length() - 1);
-//
-//}
-
 void Core::mainLoop() {
     nfds_t numfds = _servSize;
 	int pollRet;
@@ -225,7 +193,6 @@ void Core::mainLoop() {
 					std::cout << "Full req of client " << cli_it->getSetFd()->fd
 					<< " is: " << std::endl << cli_it->getReq() << std::endl;
 #endif
-				//testParse(cli_it->getReq(), cli_it);//TODO Test part
 				Response response(cli_it->getRequest().getMethod(), *cli_it);
 				cli_it->setResponse(response);
 				cli_it->makeResponse(response);

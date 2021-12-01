@@ -33,7 +33,7 @@ private:
 
 public:
 
-	Response											( std::string &method,Client & client );
+	Response											( std::string method,Client & client );
 	Response											( Response const & obj );
 	~Response											( void );
 

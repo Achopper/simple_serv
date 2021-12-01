@@ -31,15 +31,15 @@ private:
 	std::time_t 						_connectTime;
 	bool 								_finishReadReq;
 	Response							*_response;
-  Request					_request;
+	Request								_request;
 
 
 public:
 
-		std::string method;
-		std::string path;
-		std::string prot;
-		//TODO test
+//		std::string method;
+//		std::string path;
+//		std::string prot;
+//		//TODO test
 
 	Client								( Server const & server, pollfd *set );
 	Client								( Client const& obj );
@@ -72,7 +72,7 @@ public:
 	void makeResponse					( Response & response);
 public:
 	
-	void					setRequest(std::string _req);
+	void					setRequest(std::string  req);
 	Request&				getRequest( void );
 
 };

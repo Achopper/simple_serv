@@ -5,6 +5,14 @@
 
 #include "serv_includes.hpp"
 #include "Server.hpp"
+#include "Request.hpp"
+#include <map>
+
+#define PARSE_FIRST_LINE 1
+#define PARSE_HEADERS 2
+#define PARSE_BODY 3
+#define PARSE_END 4
+
 
 
 class Response;
@@ -14,6 +22,8 @@ class Client
 
 private:
 
+
+
 	Server								_server;
 	pollfd								*_setFd;
 	std::string							_body; //TODO ?
@@ -21,6 +31,8 @@ private:
 	std::time_t 						_connectTime;
 	bool 								_finishReadReq;
 	Response							*_response;
+  Request					_request;
+
 
 public:
 
@@ -32,6 +44,8 @@ public:
 	Client								( Server const & server, pollfd *set );
 	Client								( Client const& obj );
 	~Client								( void );
+
+
 
 	Client&								operator=( Client const& obj );
 
@@ -56,7 +70,13 @@ public:
 
 	void deleteClient					( void );
 	void makeResponse					( Response & response);
+public:
+	
+	void					setRequest(std::string _req);
+	Request&				getRequest( void );
 
 };
+
+std::vector<std::string> split2(const std::string& str, const std::string& delim) ;
 
 #endif //CLIENT_HPP

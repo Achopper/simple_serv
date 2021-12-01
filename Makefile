@@ -6,6 +6,7 @@ RM	= rm -f
 
 SOURCES_DIR = src/
 HEADERS_DIR = inc/
+
 SOURCES_LIST = 	main.cpp\
 				Core.cpp\
 				Client.cpp\
@@ -22,7 +23,6 @@ HEADERS_LIST = 	Core.hpp\
 				Response.hpp\
 				serv_includes.hpp\
 				DefaultPage.hpp\
-
 
 SOURCES = $(addprefix $(SOURCES_DIR), $(SOURCES_LIST))
 HEADERS = $(addprefix $(HEADERS_DIR), $(HEADERS_LIST))

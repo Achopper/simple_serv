@@ -1,7 +1,2 @@
-a.out
-cmake-build-debug
-CMakeLists.txt
-/obj
-supaDupaServ
-.idea
-tkn.txt
+# Include your project-specific ignores in this file
+# Read about how to use .gitignore: https://help.github.com/articles/ignoring-files

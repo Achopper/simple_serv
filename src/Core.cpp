@@ -169,7 +169,7 @@ void testParse(std::string const & req, std::list<Client>::iterator it) //TODO t
 
 void Core::mainLoop() {
     nfds_t numfds = _servSize;
-    int pollRet;
+	int pollRet;
 
 	while (true) {
 		if ((pollRet = poll(_fdset, numfds + 1, TIMEOUT)) < 0)
@@ -197,7 +197,17 @@ void Core::mainLoop() {
 			if (cli_it->getSetFd()->revents & (POLLRDNORM | POLLERR))
 			{
 				if (!cli_it->getFinishReadReq() )
+        {
 					readRequest(cli_it, numfds);
+          cli_it->setRequest( cli_it->getReq());
+
+					std::cout << "_method " 		<<  cli_it->getRequest().getMethod() << std::endl ;
+					std::cout << "_url " 			<<  cli_it->getRequest().getUrl() << std::endl ;
+					std::cout << "_httpVersion "	<<  cli_it->getRequest().getHttpVersion() << std::endl ;
+					std::cout << "_body "	<<  cli_it->getRequest().getBody() << std::endl ;
+					std::cout << std::endl ;
+
+        }
 				std::string::size_type pos = cli_it->getReq().find("\r\n\r\n");
 				if (pos == std::string::npos)
 					continue;
@@ -241,5 +251,5 @@ void Core::mainLoop() {
 }
 
 
-
+  
 

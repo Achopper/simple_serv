@@ -13,6 +13,7 @@ Client::Client (Server const & server, pollfd* set)
 	std::cout << GREENCOL"Client " << set->fd << " connected" << RESCOL << std::endl;
 }
 
+
 Client::Client(const Client &obj)
 {
 	*this = obj;
@@ -114,6 +115,12 @@ void Client::deleteClient()
 	_setFd->revents = 0;
 }
 
+
+std::string	Client::getReq( void )
+{
+	return (_req) ;
+}
+
 void Client::makeResponse(Response &response)
 {
 	if (_response->getCode() == "408")
@@ -136,8 +143,12 @@ void Client::makeResponse(Response &response)
 }
 
 
+Request&	Client::getRequest( void )
+{
+	return (_request) ;
+}
 
-
-
-
-
+void	Client::setRequest(std::string _req)
+{
+	_request.parseReq(_req);
+}

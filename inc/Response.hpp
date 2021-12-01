@@ -6,11 +6,11 @@
 #include "serv_includes.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
-#include "DefErrorPage.hpp"
+#include "DefaultPage.hpp"
 
 class Client;
 class Server;
-//class DefErrorPage;
+//class DefaultPage;
 
 class Response
 {
@@ -53,6 +53,7 @@ public:
 	void 		addCodetoResp							( std::string const &code );
 	void 		addContentLen							( std::string::size_type const &len );
 	void 		addContentType							( std::string const & filePath );
+	void 		addServerName							( std::string const & serverName );
 
 	bool 		GET										( Client & client);
 	bool 		getPage									( std::string const & path );

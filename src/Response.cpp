@@ -10,6 +10,11 @@ std::map<std::string, std::string> Response::setStatusCode()
 	res.insert(std::pair<std::string, std::string>("403", "Forbidden"));
 	res.insert(std::pair<std::string, std::string>("404", "Not Found"));
 	res.insert(std::pair<std::string, std::string>("413", "Payload Too Large"));
+	res.insert(std::pair<std::string, std::string>("405", "Method Not Allowed"));
+	res.insert(std::pair<std::string, std::string>("408", "Request Timeout"));
+
+	res.insert(std::pair<std::string, std::string>("505", "HTTP Version Not Supported"));
+
 
 
 	return (res);
@@ -111,16 +116,27 @@ void Response::addContentType(std::string const & filePath)
 	_response.append("Content-Type: " + _contentType[fpath.substr(pos + 1, fpath.length())] + "\r\n");
 }
 
+void Response::addServerName(std::string const & serverName)
+{
+	std::string tmp = serverName;
+	if (serverName.length() < 1)
+		tmp = "Unnamed";
+	_response.append("Server-name: " + tmp + "\r\n");
+}
+
 void Response::fillResponse()
 {
-	DefErrorPage page;
+	DefaultPage errorPage;
 	std::map<std::string, std::string> er = _client.getServer().getErrPage();
+	if (_client.prot != PROT && _code != "408")
+		_code = "505";
 	addCodetoResp(_code);
-	if (_code.at(0) == '4' && er.count(_code) > 0)
+	if ((_code.at(0) == '4' || _code.at(0) == '5') && er.count(_code) > 0)
 		getPage(_client.getServer().getRoot() + er[_code]);
-	else if (_code.at(0) == '4')
-		_body = page.makePage(_code, _statusCodes[_code], _client.getServer().getServName());
+	else if ((_code.at(0) == '4' || _code.at(0) == '5'))
+		_body = errorPage.makePage(_code, _statusCodes[_code], _client.getServer().getServName());
 	addContentType(_client.path);
+	addServerName(_client.getServer().getServName());
 	addContentLen(_body.length());
 
 	_response += _body;
@@ -150,13 +166,19 @@ bool Response::getPage(std::string const &path)
 
 bool Response::GET(Client &client)
 {
+	DefaultPage page;
 	const Server& server = client.getServer();
 	const std::vector<Location> & loclist = server.getLocList();
 	for (std::vector<Location>::const_iterator it = loclist.begin(); it != loclist.end(); ++it)
 	{
 		if (client.path == it->getPath())
 		{
-			if (!getPage(server.getRoot() + it->getRoot() + "/" + it->getIndex()))
+			if (it->getIndex().empty())
+			{
+				_body = page.makePage("", "Welcome to ", server.getServName());
+				_code = "200";
+			}
+			else if (!getPage(server.getRoot() + it->getRoot() + "/" + it->getIndex()))
 				return (false);
 			if (_body.length() > it->getClientSize())
 			{

@@ -3,13 +3,13 @@
 #define DEFERRORPAGE_HPP
 #include "serv_includes.hpp"
 
-class DefErrorPage
+class DefaultPage
 {
 public:
 
-	DefErrorPage();
+	DefaultPage();
 
-	~DefErrorPage();
+	~DefaultPage();
 
 	std::string makePage(std::string const &errorCode, std::string const & errmsg, std::string const &servVer);
 

@@ -215,6 +215,7 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 bool Config::parseLocationBlock(std::vector<std::string> &conf, std::vector<std::string>::iterator &word, Server & server)
 {
 	Location location;
+
 	if (!location.setPath(*word++) || *word != "{")
 		_err.append(REDCOL"Error in config. Expected \"{\" after \"location path\"\n" RESCOL);
 	word++;

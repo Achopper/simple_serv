@@ -53,6 +53,7 @@ public:
 	const Response * getResponse		( void ) const;
 
 public:
+
 	void deleteClient					( void );
 	void makeResponse					( Response & response);
 

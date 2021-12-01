@@ -1,17 +1,17 @@
 
-#include "../inc/DefErrorPage.hpp"
+#include "../inc/DefaultPage.hpp"
 
-DefErrorPage::DefErrorPage()
+DefaultPage::DefaultPage()
 {
 
 }
 
-DefErrorPage::~DefErrorPage()
+DefaultPage::~DefaultPage()
 {
 
 }
 
-std::string DefErrorPage::makePage(const std::string &errorCode, std::string const & errmsg,
+std::string DefaultPage::makePage(const std::string &errorCode, std::string const & errmsg,
 								   std::string const &servVer)
 {
 	std::string res = "<!DOCTYPE html>\n";
@@ -22,10 +22,9 @@ std::string DefErrorPage::makePage(const std::string &errorCode, std::string con
 	res.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=2.0\">\n");
 	res.append("<title>" + errorCode + " " + errmsg + "</title>\n");
 	res.append("</head>\n");
-	res.append("<body bgcolor=\"white\">\n");
+	res.append("<body bgcolor=\"PowderBlue\">\n");
 	res.append("<center>\n");
 	res.append("<h1>" + errorCode + " " + errmsg + "</h1>\n");
-	res.append("<center> Try again please </center>\n");
 	res.append("</center>\n");
 	res.append("<hr>\n");
 	res.append("<center>" + servVer + "</center>\n");

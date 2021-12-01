@@ -10,6 +10,7 @@ Client::Client (Server const & server, pollfd* set)
 	_connectTime (std::time(nullptr)),
 	_finishReadReq(false)
 {
+	std::cout << GREENCOL"Client " << set->fd << " connected" << RESCOL << std::endl;
 }
 
 Client::Client(const Client &obj)
@@ -34,6 +35,7 @@ Client &Client::operator=(const Client &obj)
 		_response = obj._response;
 		path = obj.path; //TODO del
 		method = obj.method; //TODO del
+		prot = obj.prot; //TODO del
 	}
 	return (*this);
 }
@@ -98,28 +100,41 @@ const Server &Client::getServer() const
 	return (_server);
 }
 
-void Client::deleteClient()
-{
-	close(_setFd->fd);
-	_setFd->fd = -1;
-}
-
-void Client::makeResponse(Response &response)
-{
-	if (response.getMethod() == "GET")
-		response.GET(*this);
-	//esle if ("POST")
-	response.fillResponse();
-
-	std::cout << _response->getResp() << std::endl;
-
-
-}
-
 const Response *Client::getResponse(void) const
 {
 	return (_response);
 }
+
+
+void Client::deleteClient()
+{
+	close(_setFd->fd);
+	_setFd->fd = -1;
+	_setFd->events = 0;
+	_setFd->revents = 0;
+}
+
+void Client::makeResponse(Response &response)
+{
+	if (_response->getCode() == "408")
+	{
+		response.fillResponse();
+		std::cout << _response->getResp() << std::endl;
+		return;
+	}
+	if (response.getMethod() == "GET")
+		response.GET(*this);
+	else
+		_response->setCode("405");
+	//esle if ("POST")
+	response.fillResponse();
+#if DEBUG_MODE > 0
+	std::cout <<GREENCOL "Response of client " << _setFd->fd << ": " << RESCOL << std::endl << response.getResp()  <<
+		std::endl;
+#endif
+
+}
+
 
 
 

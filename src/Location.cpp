@@ -3,6 +3,7 @@
 
 Location::Location() :
 _clientMaxBodySize(DEF_CLI_MAX_BDY_SZ),
+_index(""),
 _autoindex(false)
 {
 	_methods["GET"] = true;
@@ -28,6 +29,7 @@ Location &Location::operator=(const Location &obj)
 		_clientMaxBodySize = obj._clientMaxBodySize;
 		_index = obj._index;
 		_root = obj._root;
+		_autoindex = obj._autoindex;
 	}
 	return (*this);
 }

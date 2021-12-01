@@ -34,6 +34,7 @@ private:
 	void 		readRequest				( std::list<Client>::iterator &it, nfds_t& num );
 	bool 		sendResponce			( std::list<Client>::iterator &it, nfds_t& num);
 
+
 	class CoreException : public std::exception
 	{
 		virtual const char* what() const throw()

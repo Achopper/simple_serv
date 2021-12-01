@@ -4,10 +4,10 @@
 
 Request::Request ( void )
 {
-	// _isUrlSet = 0;
-	// _isMetodSet = 0;
-	// _isHttpVerSet = 0;
 	_isFirstLineSet = 0;
+	_isHeadersEnd = 0;
+	_isBodyEnd = 0;
+	_bodySize = 0;
 	// _parsStatus = PARSE_FIRST_LINE
 }
 
@@ -25,7 +25,7 @@ Request &Request::operator=(const Request &obj)
 	if (this != &obj)
 	{
 		_isFirstLineSet = obj._isFirstLineSet;
-		// _isHeadersEnd
+		_isHeadersEnd = obj._isHeadersEnd;
 		_method = obj._method;
 		_url = obj._url;
 		_httpVersion = obj._httpVersion;
@@ -50,7 +50,7 @@ Request &Request::operator=(const Request &obj)
 	std::string	Request::getBuf(){
 		return _buf;
 	}
-	std::string	Request::getReqBody(){
+	std::string	Request::getBody(){
 		return _body;
 	}
 	std::string	Request::getMethod(){
@@ -81,9 +81,10 @@ std::vector<std::string> split2(const std::string& str, const std::string& delim
 
 void	Request::parseReq(std::string req){
 	_buf += req;
-	size_t endFind = _buf.find("\r\n") ;
+	size_t endLine = _buf.find("\r\n") ;
+	size_t endHeaders = _buf.find("\r\n\r\n") ;
 	
-	while(endFind != static_cast<size_t>(-1))
+	while(endLine != static_cast<size_t>(-1) && !_isBodyEnd)
 	{
 		if (!_isFirstLineSet)
 		{	
@@ -100,12 +101,12 @@ void	Request::parseReq(std::string req){
 				_isFirstLineSet = 1;
 			}
 			else
-				return ;// err
+				return ;// err // throw exeption()
 			
-			_buf.erase(0, endFind + 2) ;
+			_buf.erase(0, endLine + 2) ;
 			str.clear() ;
 		}
-		if (_isFirstLineSet != 0)
+		else if (_isFirstLineSet && !_isHeadersEnd)
 		{	
 			std::string	str2;
 			for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
@@ -114,12 +115,44 @@ void	Request::parseReq(std::string req){
 			std::vector<std::string> headLines = split2(str2, ": ");
 			if (headLines.size() == 2)
 				_headersMap[headLines[0]] = headLines[1];
+			// else
+				// throw exeption()
+			// std::cout << "endLine " << endLine << "  " << "endHeaders " << endHeaders << std::endl ;
 
-			
-			_buf.erase(0, endFind + 2) ;
-			str2.clear();
+			if (endHeaders == endLine )
+			{
+				_buf.erase(0, endLine + 4) ;
+				str2.clear();
+				_isHeadersEnd = 1;
+			}
+			else
+			{
+				_buf.erase(0, endLine + 2) ;
+				str2.clear();
+			}
+			std::string сonLen("Content-Length");
+			if (!_headersMap[сonLen].empty())
+				_bodySize = static_cast<size_t>(stoll(_headersMap[сonLen]));//С++11
 		}
-		endFind = _buf.find("\r\n") ;
+		else if (_isHeadersEnd && _method == "POST")
+		{
+
+			std::string	str3;
+			while (_bodySize)
+				for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
+				{
+					str3 += *it ;
+					--_bodySize;
+				}
+			std::cout << str3 << std::endl ;
+			_body += str3;
+			str3.clear();
+			if (_bodySize == 0)
+				_isBodyEnd = 1 ;
+		}
+		endLine = _buf.find("\r\n") ;
+		endHeaders = _buf.find("\r\n\r\n") ;
+
 	}
 	// for (std::map<std::string, std::string>::iterator it = _headersMap.begin(); it != _headersMap.end(); ++it)
 	// std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;

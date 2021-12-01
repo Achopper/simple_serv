@@ -18,15 +18,17 @@ class Request
 private:
 
 	bool									_isFirstLineSet;
-	// bool									_isHeadersEnd;
+	bool									_isHeadersEnd;
+	bool									_isBodyEnd;
 
 	std::string								_method;
 	std::string								_url;
 	std::string								_httpVersion;
 	std::map<std::string, std::string>		_headersMap;
-	std::string								_body;
 	std::string 							_queryString;
 	std::string								_buf;
+	std::string								_body;
+	size_t									_bodySize;
 
 
 public:
@@ -45,7 +47,7 @@ public:
 
 	std::string				getUrl();
 	std::string				getBuf();
-	std::string				getReqBody();
+	std::string				getBody();
 	std::string				getMethod();
 	std::string				getHttpVersion();
 	std::string				getQueryString();

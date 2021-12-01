@@ -6,8 +6,23 @@ RM	= rm -f
 
 SOURCES_DIR = src/
 HEADERS_DIR = inc/
-SOURCES_LIST = main.cpp Core.cpp Client.cpp Config.cpp Server.cpp Request.cpp
-HEADERS_LIST = Core.hpp Config.hpp Server.hpp Request.hpp
+
+SOURCES_LIST = 	main.cpp\
+				Core.cpp\
+				Client.cpp\
+				Config.cpp\
+				Server.cpp\
+				Location.cpp\
+				Response.cpp\
+				DefaultPage.cpp\
+
+HEADERS_LIST = 	Core.hpp\
+				Config.hpp\
+				Location.hpp\
+				Server.hpp\
+				Response.hpp\
+				serv_includes.hpp\
+				DefaultPage.hpp\
 
 SOURCES = $(addprefix $(SOURCES_DIR), $(SOURCES_LIST))
 HEADERS = $(addprefix $(HEADERS_DIR), $(HEADERS_LIST))

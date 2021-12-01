@@ -141,7 +141,7 @@ bool Config::checkSemicolon(std::vector<std::string>::iterator &word)
 	semicol = word->find(";", 0);
 	if (semicol != std::string::npos && word->length()  == semicol + 1)
 		return (true);
-	_err.append("Expecting \";\" after " + *word);
+	_err.append(REDCOL"Expecting \";\" after " + *word + "\n" RESCOL);
 	return (false);
 
 }
@@ -153,7 +153,7 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 
 	if (*word != "{")
 	{
-		_err.append("Error in config. Expected \"{\" after \"server\"");
+		_err.append(REDCOL"Error in config. Expected \"{\" after \"server\"\n" RESCOL);
 		return (false);
 	}
 	*++word;
@@ -162,30 +162,30 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 		if (*word == "listen")
 		{
 			pos = (++word)->find(':', 0);
-			if (pos == std::string::npos)
-			{
-				_err.append("Wrong host adress: " + *word);
-				return (false);
-			}
-			if (!checkSemicolon(word))
-				return (false);
-			if (!(server.setAddr(std::string(std::begin(*word), word->end() - 1), pos)))
-			{
-				_err.append(REDCOL"Wrong host adress: " + *word + RESCOL);
-				return (false);
-			}
+			if (pos == std::string::npos || !checkSemicolon(word) ||
+				!(server.setAddr(std::string(std::begin(*word), word->end() - 1), pos)))
+				_err.append(REDCOL"Wrong host adress: " + *word + "\n" RESCOL);
 		}
+		else if (*word == "location")
+			parseLocationBlock(conf, ++word, server);
 		else if (*word == "server_name")
 		{
-			if (!checkSemicolon(++word))
-				return (false);
-			server.setServName((word)->substr(0, word->length() - 1));
+			if (!checkSemicolon(++word)
+			|| !server.setServName((word)->substr(0, word->length() - 1)))
+				word++;
 		}
 		else if (*word == "root")
 		{
-			if (!checkSemicolon(++word))
-				return (false);
-			server.setRoot((word)->substr(0, word->length() - 1));
+			if (!checkSemicolon(++word) ||
+			!server.setRoot((word)->substr(0, word->length() - 1)))
+				_err.append(REDCOL"Wrong root adress \n" RESCOL);
+		}
+		else if (*word == "error_page")
+		{
+			std::string code = *++word;
+			if (!checkSemicolon(++word) ||
+				!server.setErrorPage((word)->substr(0, word->length() - 1), code, _err))
+				_err.append(REDCOL"Wrong errorPage adress \n" RESCOL);
 		}
 		else if (*word == "}")
 		{
@@ -194,13 +194,83 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 		}
 		else
 		{
-			_err.append("Unknown config parametr in server block: " + *word);
-			return (false);
+			_err.append(REDCOL"Unknown config parametr in server block: " + *word + "\n" RESCOL);
+			word++;
 		}
 		*++word;
 	}
+	if (_err.length() > 0)
+		return (false);
+	if (!checkUnicLocation(server))
+	{
+		_err.append(REDCOL"Location path must be unique\n" RESCOL);
+		return (false);
+	}
 	setServer(server);
+	std::cout << "http://"  << server.getServIp() << ":" << server.getPort() << std::endl;
 	_servCount++;
+	return (true);
+}
+
+bool Config::parseLocationBlock(std::vector<std::string> &conf, std::vector<std::string>::iterator &word, Server & server)
+{
+	Location location;
+
+	if (!location.setPath(*word++) || *word != "{")
+		_err.append(REDCOL"Error in config. Expected \"{\" after \"location path\"\n" RESCOL);
+	word++;
+	for (; word != conf.end();)
+	{
+		if (*word == "root")
+		{
+			if(!checkSemicolon(++word) || !location.setRoot((word)->substr(0, (word)->length() - 1)))
+				_err.append(REDCOL"Wrong root directive in location block\n" RESCOL);
+		}
+		else if (*word == "index")
+		{
+			if (!checkSemicolon(++word) || !location.setIndex((word)->substr(0, word->length() - 1)))
+				_err.append( REDCOL"Wrong index directive\n" RESCOL);
+		}
+		else if (*word == "client_max_body_size")
+		{
+			if (!checkSemicolon(++word) || !location.setClientBodySize(word->substr(0, word->length() - 1)))
+				_err.append(REDCOL"Wrong client size\n" RESCOL);
+		}
+		else if (*word == "autoindex")
+		{
+			if (!checkSemicolon(++word) || !location.setAutoindex(word->substr(0, word->length() - 1)))
+				_err.append(REDCOL"Wrong autoindex, must be on || off\n" RESCOL);
+		}
+		else if (*word == "methods")
+		{
+			if (!checkSemicolon(++word) || !location.setMethods(word->substr(0, word->length() - 1)))
+				_err.append(REDCOL"Wrong method list\n" RESCOL);
+		}
+//		else if (*word == "return")
+//		{
+//
+//		}
+		else if (*word == "}")
+			break;
+		else
+			_err.append(REDCOL"Unknown config parametr in location block: " + *word + "\n" RESCOL);
+		*++word;
+	}
+	if (_err.length() > 0 )
+		return (false);
+	server.setLocList(location);
+	return (true);
+}
+
+bool Config::checkUnicLocation(Server const & server) const
+{
+	std::vector<Location> tmp = server.getLocList();
+	for (std::vector<Location>::iterator it = tmp.begin(); it != tmp.end(); ++it)
+	{
+		for (std::vector<Location>::iterator jt = it + 1; jt != tmp.end(); ++jt)
+			if (it->getPath() == jt->getPath())
+				return (false);
+	}
 	return (true);
 }
 

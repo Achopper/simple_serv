@@ -1,7 +1,10 @@
 
 #include "../inc/Server.hpp"
 
-Server::Server(void) : _servIp(""), _serverName(""), _port("")
+Server::Server() :
+_servIp(""),
+_serverName(""),
+_port("")
 {
 }
 
@@ -24,7 +27,8 @@ Server &Server::operator=(const Server &obj)
 		_port			= obj._port;
 		_addr			= obj._addr;
 		_root			= obj._root;
-		_response		= obj._response;
+		_locList		= obj._locList;
+		_errorPages		= obj._errorPages;
 	}
 	return *this;
 }
@@ -51,9 +55,10 @@ bool Server::setPort(const std::string &port)
 	return (true);
 }
 
-void Server::setServName(const std::string &servName)
+bool Server::setServName(const std::string &servName)
 {
 	_serverName = servName;
+	return (true);
 }
 
 bool Server::setAddr(const std::string &addr, unsigned long &pos)
@@ -64,7 +69,6 @@ bool Server::setAddr(const std::string &addr, unsigned long &pos)
 		return (false);
 	_addr.sin_family = PF_INET;
 	memset(_addr.sin_zero, '\0', sizeof _addr.sin_zero);
-	std::cout << "http://"  << _servIp << ":" << _port << std::endl;
 	return (true);
 }
 
@@ -74,9 +78,35 @@ void Server::setServerFd(pollfd *fdSet)
 	_serverFd = fdSet;
 }
 
-void Server::setRoot(const std::string &root)
+bool Server::setRoot(const std::string &root)
 {
+	if (root[0] != '.')
+		return (false);
 	_root = root;
+	return (true);
+}
+
+void Server::setLocList(const std::vector<Location> &locList)
+{
+	_locList = locList;
+}
+
+void Server::setLocList(const Location &location)
+{
+	_locList.push_back(location);
+}
+
+bool Server::setErrorPage(const std::string &address, const std::string &code, std::string & error)
+{
+
+	for (std::string::const_iterator it = code.begin(); it != code.end(); ++it)
+		if (!std::isdigit(*it) || code.length() != 3)
+		{
+			error.append(REDCOL"Wrong error code address \n" RESCOL);
+			return (false);
+		}
+	_errorPages.insert(std::pair<std::string, std::string>(code, address));
+	return (true);
 }
 
 std::string Server::getServIp() const
@@ -108,4 +138,16 @@ std::string Server::getRoot() const
 {
 	return (_root);
 }
+
+const std::vector<Location> & Server::getLocList() const
+{
+	return (_locList);
+}
+
+const std::map<std::string, std::string>& Server::getErrPage() const
+{
+	return (_errorPages);
+}
+
+
 

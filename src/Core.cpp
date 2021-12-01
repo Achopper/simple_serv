@@ -135,38 +135,6 @@ bool Core::initSocets()
 	return (true);
 }
 
-void testParse(std::string const & req, std::list<Client>::iterator it) //TODO test
-{
-	std::vector<std::string> splitRequest;
-	for (std::string::size_type start = 0, end = 0; start != req.length();)
-	{
-		end = req.find("\r\n", start);
-		if (end == std::string::npos)
-		{
-			splitRequest.push_back(req.substr(start, req.length()));
-			break;
-		}
-		std::string tok = req.substr(start,end - start);
-		splitRequest.push_back(tok);
-		start = end + 2;
-	}
-	for (std::string::size_type start = 0, end = 0; start != splitRequest.at(0).length();)
-	{
-		end = splitRequest.at(0).find(' ', start);
-		if (end == std::string::npos)
-		{
-			it->prot = (splitRequest.at(0).substr(start, splitRequest.at(0).length()));
-			break;
-		}
-		std::string tok = splitRequest.at(0).substr(start,end - start);
-		tok[0] == '/' ? it->path = tok : it->method = tok;
-		start = end + 1;
-	}
-	if (it->path.length() > 1 && it->path[it->path.length() - 1] == '/')
-		it->path = it->path.substr(0, it->path.length() - 1);
-
-}
-
 void Core::mainLoop() {
     nfds_t numfds = _servSize;
 	int pollRet;
@@ -197,17 +165,16 @@ void Core::mainLoop() {
 			if (cli_it->getSetFd()->revents & (POLLRDNORM | POLLERR))
 			{
 				if (!cli_it->getFinishReadReq() )
-        {
+				{
 					readRequest(cli_it, numfds);
-          cli_it->setRequest( cli_it->getReq());
+					cli_it->setRequest(cli_it->getReq());
+					std::cout << "_method " << cli_it->getRequest().getMethod() << std::endl;
+					std::cout << "_url " << cli_it->getRequest().getUrl() << std::endl;
+					std::cout << "_httpVersion " << cli_it->getRequest().getHttpVersion() << std::endl;
+					std::cout << "_body " << cli_it->getRequest().getBody() << std::endl;
+					std::cout << std::endl;
 
-					std::cout << "_method " 		<<  cli_it->getRequest().getMethod() << std::endl ;
-					std::cout << "_url " 			<<  cli_it->getRequest().getUrl() << std::endl ;
-					std::cout << "_httpVersion "	<<  cli_it->getRequest().getHttpVersion() << std::endl ;
-					std::cout << "_body "	<<  cli_it->getRequest().getBody() << std::endl ;
-					std::cout << std::endl ;
-
-        }
+				}
 				std::string::size_type pos = cli_it->getReq().find("\r\n\r\n");
 				if (pos == std::string::npos)
 					continue;
@@ -226,8 +193,7 @@ void Core::mainLoop() {
 					std::cout << "Full req of client " << cli_it->getSetFd()->fd
 					<< " is: " << std::endl << cli_it->getReq() << std::endl;
 #endif
-				testParse(cli_it->getReq(), cli_it);//TODO Test part
-				Response response(cli_it->method, *cli_it);
+				Response response(cli_it->getRequest().getMethod(), *cli_it);
 				cli_it->setResponse(response);
 				cli_it->makeResponse(response);
 				sendResponce(cli_it, numfds);
@@ -238,13 +204,11 @@ void Core::mainLoop() {
 				std::cout << REDCOL"Client " << cli_it->getSetFd()->fd  << " disconnected by timeout" << RESCOL <<
 						  std::endl;
 #endif
-				Response response(cli_it->method, *cli_it);
+				Response response(cli_it->getRequest().getMethod(), *cli_it);
 				response.setCode("408");
 				cli_it->setResponse(response);
 				cli_it->makeResponse(response);
 				sendResponce(cli_it, numfds);
-				cli_it->deleteClient();
-				cli_it = _clientList.erase(cli_it);
 			}
 		}
 	}

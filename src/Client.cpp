@@ -10,6 +10,7 @@ Client::Client (Server const & server, pollfd* set)
 	_connectTime (std::time(nullptr)),
 	_finishReadReq(false)
 {
+	_request = Request();
 	std::cout << GREENCOL"Client " << set->fd << " connected" << RESCOL << std::endl;
 }
 
@@ -34,9 +35,10 @@ Client &Client::operator=(const Client &obj)
 		_connectTime = obj._connectTime;
 		_finishReadReq = obj._finishReadReq;
 		_response = obj._response;
-		path = obj.path; //TODO del
-		method = obj.method; //TODO del
-		prot = obj.prot; //TODO del
+		_request = obj._request;
+//		path = obj.path; //TODO del
+//		method = obj.method; //TODO del
+//		prot = obj.prot; //TODO del
 	}
 	return (*this);
 }
@@ -75,6 +77,7 @@ std::string Client::getReq(void) const
 {
 	return (_req);
 }
+
 
 pollfd* Client::getSetFd(void) const
 {
@@ -116,10 +119,6 @@ void Client::deleteClient()
 }
 
 
-std::string	Client::getReq( void )
-{
-	return (_req) ;
-}
 
 void Client::makeResponse(Response &response)
 {
@@ -148,7 +147,7 @@ Request&	Client::getRequest( void )
 	return (_request) ;
 }
 
-void	Client::setRequest(std::string _req)
+void	Client::setRequest(std::string  req)
 {
-	_request.parseReq(_req);
+	_request.parseReq(req);
 }

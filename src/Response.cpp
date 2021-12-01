@@ -33,7 +33,7 @@ std::map<std::string, std::string> Response::setContentType()
 std::map<std::string, std::string>Response::_statusCodes = Response::setStatusCode();
 std::map<std::string, std::string>Response::_contentType = Response::setContentType();
 
-Response::Response(std::string &method, Client & client) : _method(method), _client(client)
+Response::Response(std::string method, Client & client) : _method(method), _client(client)
 {
 }
 
@@ -128,14 +128,14 @@ void Response::fillResponse()
 {
 	DefaultPage errorPage;
 	std::map<std::string, std::string> er = _client.getServer().getErrPage();
-	if (_client.prot != PROT && _code != "408")
+	if (_client.getRequest().getHttpVersion() != PROT && _code != "408")
 		_code = "505";
 	addCodetoResp(_code);
 	if ((_code.at(0) == '4' || _code.at(0) == '5') && er.count(_code) > 0)
 		getPage(_client.getServer().getRoot() + er[_code]);
 	else if ((_code.at(0) == '4' || _code.at(0) == '5'))
 		_body = errorPage.makePage(_code, _statusCodes[_code], _client.getServer().getServName());
-	addContentType(_client.path);
+	addContentType(_client.getRequest().getUrl());
 	addServerName(_client.getServer().getServName());
 	addContentLen(_body.length());
 
@@ -171,7 +171,7 @@ bool Response::GET(Client &client)
 	const std::vector<Location> & loclist = server.getLocList();
 	for (std::vector<Location>::const_iterator it = loclist.begin(); it != loclist.end(); ++it)
 	{
-		if (client.path == it->getPath())
+		if (client.getRequest().getUrl() == it->getPath())
 		{
 			if (it->getIndex().empty())
 			{

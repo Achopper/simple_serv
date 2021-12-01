@@ -15,6 +15,7 @@ SOURCES_LIST = 	main.cpp\
 				Location.cpp\
 				Response.cpp\
 				DefaultPage.cpp\
+				Request.cpp
 
 HEADERS_LIST = 	Core.hpp\
 				Config.hpp\
@@ -23,6 +24,7 @@ HEADERS_LIST = 	Core.hpp\
 				Response.hpp\
 				serv_includes.hpp\
 				DefaultPage.hpp\
+				Request.hpp
 
 SOURCES = $(addprefix $(SOURCES_DIR), $(SOURCES_LIST))
 HEADERS = $(addprefix $(HEADERS_DIR), $(HEADERS_LIST))

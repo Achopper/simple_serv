@@ -33,26 +33,28 @@ private:
 
 public:
 
-	Request					( void );
-	Request					( Request const& obj );
-	~Request				( void );
-	Request&				operator=( Request const& obj );
+	Request									( void );
+	Request									( Request const& obj );
+	~Request								( void );
+	Request&								operator=( Request const& obj );
 
-	void					setUrl();
-	void					setBuf();
-	void					setBody();
-	void					setMethod();
-	void					setHttpVersion();
-	void					setQueryString();
+	void									setUrl();
+	void									setBuf();
+	void									setBody();
+	void									setMethod();
+	void									setHttpVersion();
+	void									setQueryString();
 
-	std::string				getUrl();
-	std::string				getBuf();
-	std::string				getBody();
-	std::string				getMethod();
-	std::string				getHttpVersion();
-	std::string				getQueryString();
+	std::string								getUrl();
+	std::string								getBuf();
+	std::string								getBody();
+	std::string								getMethod();
+	std::string								getHttpVersion();
+	std::string								getQueryString();
 
-	void					parseReq(std::string req);
+	std::map<std::string, std::string>		getHeadersMap();
+
+	void									parseReq(std::string req);
 
 
 };

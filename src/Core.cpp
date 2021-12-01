@@ -159,13 +159,12 @@ void Core::mainLoop() {
 					it->setReq(readRequest(it, numfds));
 
 					it->setRequest(it->getReq());
-					// for (std::map<std::string, std::string>::iterator it = it_headersMap.begin(); it != _headersMap.end(); ++it)
-					// 	std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;
-					// std::cout << "_method " 		<< it->getRequest().getMethod() << std::endl ;
-					// std::cout << "_url " 			<< it->getRequest().getUrl() << std::endl ;
-					// std::cout << "_httpVersion "	<< it->getRequest().getHttpVersion() << std::endl ;
+
+					std::cout << "_method " 		<< it->getRequest().getMethod() << std::endl ;
+					std::cout << "_url " 			<< it->getRequest().getUrl() << std::endl ;
+					std::cout << "_httpVersion "	<< it->getRequest().getHttpVersion() << std::endl ;
 					std::cout << "_body "	<< it->getRequest().getBody() << std::endl ;
-					// std::cout << std::endl ;
+					std::cout << std::endl ;
 
 					std::string::size_type pos = it->getReq().find("\r\n\r\n");
 					if (pos == std::string::npos)

@@ -62,7 +62,9 @@ Request &Request::operator=(const Request &obj)
 	std::string	Request::getQueryString(){
 		return _queryString;
 	}
-
+std::map<std::string, std::string>	Request::getHeadersMap(){
+	return _headersMap;
+}
 std::vector<std::string> split2(const std::string& str, const std::string& delim)
 {
     std::vector<std::string> tokens;
@@ -136,17 +138,11 @@ void	Request::parseReq(std::string req){
 		}
 		else if (_isHeadersEnd && _method == "POST")
 		{
-
-			std::string	str3;
-			while (_bodySize)
-				for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
-				{
-					str3 += *it ;
-					--_bodySize;
-				}
-			std::cout << str3 << std::endl ;
-			_body += str3;
-			str3.clear();
+			for ( std::string::iterator it=_buf.begin(); it!=_buf.end() && _bodySize; ++it)
+			{
+				_body += *it ;
+				--_bodySize;
+			}
 			if (_bodySize == 0)
 				_isBodyEnd = 1 ;
 		}

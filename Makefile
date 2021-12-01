@@ -1,13 +1,28 @@
 NAME = supaDupaServ
 
-FLAGS = -Wall -Werror -Wextra --std=c++98 -Wconversion -g
+FLAGS = -Wall -Werror -Wextra --std=c++98 -Wconversion -fsanitize=address -g
 CC	= clang++
 RM	= rm -f
 
 SOURCES_DIR = src/
 HEADERS_DIR = inc/
-SOURCES_LIST = main.cpp Core.cpp Client.cpp Config.cpp Server.cpp
-HEADERS_LIST = Core.hpp Config.hpp Server.hpp
+SOURCES_LIST = 	main.cpp\
+				Core.cpp\
+				Client.cpp\
+				Config.cpp\
+				Server.cpp\
+				Location.cpp\
+				Response.cpp\
+				DefaultPage.cpp\
+
+HEADERS_LIST = 	Core.hpp\
+				Config.hpp\
+				Location.hpp\
+				Server.hpp\
+				Response.hpp\
+				serv_includes.hpp\
+				DefaultPage.hpp\
+
 
 SOURCES = $(addprefix $(SOURCES_DIR), $(SOURCES_LIST))
 HEADERS = $(addprefix $(HEADERS_DIR), $(HEADERS_LIST))

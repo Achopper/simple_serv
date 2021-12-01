@@ -5,8 +5,7 @@
 
 #include "serv_includes.hpp"
 #include "Server.hpp"
-class Server;
-
+#include "Location.hpp"
 
 class Config
 {
@@ -31,7 +30,7 @@ public:
 	std::string 		getConf			( void ) const;
 	uint32_t 			getServCount	( void ) const;
 
-	void		setServer				( Server &server );
+	void				setServer		( Server &server );
 
 public:
 
@@ -43,7 +42,10 @@ protected:
 	std::vector<std::string> preParse	( std::string const &toParse );
 	std::vector<std::string> splitConf	( void );
 	bool 		parseServerBlock		( std::vector<std::string> &conf, std::vector<std::string>::iterator &word );
+	bool 		parseLocationBlock		( std::vector<std::string> &conf, std::vector<std::string>::iterator &word,
+											 Server & server);
 	bool 		checkSemicolon			( std::vector<std::string>::iterator &word );
+	bool 		checkUnicLocation		( Server const & server ) const;
 
 };
 

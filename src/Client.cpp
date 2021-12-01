@@ -1,13 +1,16 @@
 
 #include "../inc/Client.hpp"
+#include "../inc/Response.hpp"
 
 Client::Client (Server const & server, pollfd* set)
 : 	_server(server),
 	_setFd(set),
 	_body(""),
 	_req(""),
-	_connectTime (std::time(nullptr))
+	_connectTime (std::time(nullptr)),
+	_finishReadReq(false)
 {
+	std::cout << GREENCOL"Client " << set->fd << " connected" << RESCOL << std::endl;
 }
 
 Client::Client(const Client &obj)
@@ -28,6 +31,11 @@ Client &Client::operator=(const Client &obj)
 		_body = obj._body;
 		_req = obj._req;
 		_connectTime = obj._connectTime;
+		_finishReadReq = obj._finishReadReq;
+		_response = obj._response;
+		path = obj.path; //TODO del
+		method = obj.method; //TODO del
+		prot = obj.prot; //TODO del
 	}
 	return (*this);
 }
@@ -52,6 +60,11 @@ void Client::setConnTime()
 	_connectTime = std::time(nullptr);
 }
 
+void Client::setResponse(Response &response)
+{
+	_response = &response;
+}
+
 std::string Client::getBody() const
 {
 	return (_body);
@@ -72,12 +85,58 @@ time_t Client::getConTime() const
 	return (_connectTime);
 }
 
+void Client::setFinishReadReq(bool isFinish)
+{
+	_finishReadReq = isFinish;
+}
+
+bool Client::getFinishReadReq(void) const
+{
+	return (_finishReadReq);
+}
+
+const Server &Client::getServer() const
+{
+	return (_server);
+}
+
+const Response *Client::getResponse(void) const
+{
+	return (_response);
+}
+
+
 void Client::deleteClient()
 {
-	std::cout << REDCOL"Client " << _setFd->fd  << " disconnected" << RESCOL << std::endl;
 	close(_setFd->fd);
 	_setFd->fd = -1;
+	_setFd->events = 0;
+	_setFd->revents = 0;
 }
+
+void Client::makeResponse(Response &response)
+{
+	if (_response->getCode() == "408")
+	{
+		response.fillResponse();
+		std::cout << _response->getResp() << std::endl;
+		return;
+	}
+	if (response.getMethod() == "GET")
+		response.GET(*this);
+	else
+		_response->setCode("405");
+	//esle if ("POST")
+	response.fillResponse();
+#if DEBUG_MODE > 0
+	std::cout <<GREENCOL "Response of client " << _setFd->fd << ": " << RESCOL << std::endl << response.getResp()  <<
+		std::endl;
+#endif
+
+}
+
+
+
 
 
 

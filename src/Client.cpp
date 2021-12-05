@@ -149,5 +149,13 @@ Request&	Client::getRequest( void )
 
 void	Client::setRequest(std::string  req)
 {
-	_request.parseReq(req);
+	try
+	{
+		_request.parseReq(req);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	
 }

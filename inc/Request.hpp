@@ -21,6 +21,7 @@ private:
 	bool									_isHeadersEnd;
 	bool									_isBodyEnd;
 
+	std::string								_errCode;
 	std::string								_method;
 	std::string								_url;
 	std::string								_httpVersion;
@@ -29,6 +30,8 @@ private:
 	std::string								_buf;
 	std::string								_body;
 	size_t									_bodySize;
+	int										_firstLineMaxSize;
+	int										_firstLineSize;
 
 
 public:
@@ -42,8 +45,11 @@ public:
 	void									setBuf();
 	void									setBody();
 	void									setMethod();
+	void									setBodySize();
 	void									setHttpVersion();
 	void									setQueryString();
+	void									setHeadersMap(size_t endLine, size_t endHeaders);
+	void									setFirstLine(size_t endLine);
 
 	std::string								getUrl();
 	std::string								getBuf();
@@ -55,6 +61,8 @@ public:
 	std::map<std::string, std::string>		getHeadersMap();
 
 	void									parseReq(std::string req);
+	void									checkHttpVersion(std::string httpVersion);
+	void									checkMethod(std::string method);
 
 
 };

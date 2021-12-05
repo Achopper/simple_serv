@@ -7,9 +7,14 @@ std::map<std::string, std::string> Response::setStatusCode()
 	res.insert(std::pair<std::string, std::string>("100", "Continue"));
 	res.insert(std::pair<std::string, std::string>("200", "OK"));
 
+	res.insert(std::pair<std::string, std::string>("400", "Bad Request"));
 	res.insert(std::pair<std::string, std::string>("403", "Forbidden"));
 	res.insert(std::pair<std::string, std::string>("404", "Not Found"));
+	res.insert(std::pair<std::string, std::string>("405", "Method Not Allowed"));
+	res.insert(std::pair<std::string, std::string>("411", "Length Required"));
 	res.insert(std::pair<std::string, std::string>("413", "Payload Too Large"));
+	res.insert(std::pair<std::string, std::string>("414", "Request-URI Too Long"));
+	res.insert(std::pair<std::string, std::string>("416", "Requested Range Not Satisfiable"));
 	res.insert(std::pair<std::string, std::string>("405", "Method Not Allowed"));
 	res.insert(std::pair<std::string, std::string>("408", "Request Timeout"));
 

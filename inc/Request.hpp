@@ -41,13 +41,13 @@ public:
 	~Request								( void );
 	Request&								operator=( Request const& obj );
 
-	void									setUrl();
+	void									setUrl(std::string str);
 	void									setBuf();
 	void									setBody();
-	void									setMethod();
+	void									setMethod(std::string str);
 	void									setBodySize();
-	void									setHttpVersion();
-	void									setQueryString();
+	void									setHttpVersion(std::string str);
+	void									setQueryString(std::string str);
 	void									setHeadersMap(size_t endLine, size_t endHeaders);
 	void									setFirstLine(size_t endLine);
 

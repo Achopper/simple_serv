@@ -38,11 +38,22 @@ Request &Request::operator=(const Request &obj)
 	return (*this);
 }
 
-// void	Request::setUrl(){}
+void	Request::setUrl(std::string str){
+	_url = str;
+}
 // void	Request::setBuf(){}
-// void	Request::setMethod(){}
-// void	Request::setHttpVersion(){}
-// void	Request::setQueryString(){}
+void	Request::setMethod(std::string str){
+	_method = str;
+}
+void	Request::setHttpVersion(std::string str){
+	_httpVersion = str ;
+}
+void	Request::setQueryString(std::string str){
+	size_t findQ = str.find("?");
+	if (findQ == std::string::npos)
+		return ;
+	_queryString = str.substr(findQ + 1, str.size()) ;
+}
 void	Request::setBody(){
 	for ( std::string::iterator it=_buf.begin(); it!=_buf.end() && _bodySize; ++it)
 	{
@@ -59,6 +70,7 @@ void	Request::setBodySize(){
 }
 void	Request::setFirstLine(size_t endLine){
 	std::string	str;
+	
 	for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
 	{
 		str += *it ;
@@ -70,20 +82,21 @@ void	Request::setFirstLine(size_t endLine){
 		}
 	}
 	std::vector<std::string> firstLine = split2(str, " ");
-	if (firstLine.size() == 3)
-	{
-		checkMethod(firstLine[0]);
-		_method = firstLine[0] ;
-		_url = firstLine[1] ;
-		// checkHttpVersion(firstLine[2]);
-		_httpVersion = firstLine[2] ;
-		_isFirstLineSet = 1;
-	}
-	else
+	if (firstLine.size() != 3)
 	{
 		_errCode = "400";
 		throw std::exception();
-	}	
+	}
+	checkMethod(firstLine[0]);
+	setMethod(firstLine[0]) ;
+
+	setUrl(firstLine[1]) ;
+	setQueryString(firstLine[1]) ;
+
+	checkHttpVersion(firstLine[2]);
+	setHttpVersion(firstLine[2]) ;
+	
+	_isFirstLineSet = 1;
 	_buf.erase(0, endLine + 2) ;
 }
 void	Request::setHeadersMap(size_t endLine, size_t endHeaders){
@@ -175,7 +188,7 @@ void	Request::parseReq(std::string req){
 }
 
 void	Request::checkMethod(std::string method){
-	if (method != "POST" || method != "GET" || method != "DELEDE")
+	if (method != "POST" && method != "GET" && method != "DELETE")
 	{
 		_errCode = "405";
 		throw std::exception();

@@ -168,10 +168,11 @@ void Core::mainLoop() {
 				{
 					readRequest(cli_it, numfds);
 					cli_it->setRequest(cli_it->getReq());
-					std::cout << "_method " << cli_it->getRequest().getMethod() << std::endl;
+					// std::cout << "_method " << cli_it->getRequest().getMethod() << std::endl;
 					std::cout << "_url " << cli_it->getRequest().getUrl() << std::endl;
-					std::cout << "_httpVersion " << cli_it->getRequest().getHttpVersion() << std::endl;
-					std::cout << "_body " << cli_it->getRequest().getBody() << std::endl;
+					// std::cout << "_httpVersion " << cli_it->getRequest().getHttpVersion() << std::endl;
+					// std::cout << "_body " << cli_it->getRequest().getBody() << std::endl;
+					std::cout << "_queryString " << cli_it->getRequest().getQueryString() << std::endl;
 					std::cout << std::endl;
 
 				}
@@ -208,7 +209,7 @@ void Core::mainLoop() {
 				response.setCode("408");
 				cli_it->setResponse(response);
 				cli_it->makeResponse(response);
-				sendResponce(cli_it, numfds);
+				// sendResponce(cli_it, numfds);
 			}
 		}
 	}

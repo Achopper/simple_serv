@@ -23,6 +23,7 @@ private:
 
 	std::string								_errCode;
 	std::string								_method;
+	std::string								_uri;
 	std::string								_url;
 	std::string								_httpVersion;
 	std::map<std::string, std::string>		_headersMap;
@@ -41,16 +42,19 @@ public:
 	~Request								( void );
 	Request&								operator=( Request const& obj );
 
-	void									setUrl(std::string str);
-	void									setBuf();
+	void									addBuf(std::string req);
+
+	void									setUri(std::string str);
+	void									setUrl(std::string str, size_t findQ);
 	void									setBody();
 	void									setMethod(std::string str);
 	void									setBodySize();
 	void									setHttpVersion(std::string str);
-	void									setQueryString(std::string str);
+	void									setQueryString(std::string str, size_t findQ);
 	void									setHeadersMap(size_t endLine, size_t endHeaders);
 	void									setFirstLine(size_t endLine);
 
+	std::string								getUri();
 	std::string								getUrl();
 	std::string								getBuf();
 	std::string								getBody();

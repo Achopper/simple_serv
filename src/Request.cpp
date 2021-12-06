@@ -38,18 +38,27 @@ Request &Request::operator=(const Request &obj)
 	return (*this);
 }
 
-void	Request::setUrl(std::string str){
-	_url = str;
+void	Request::addBuf(std::string req){
+
+	_buf += req;
 }
-// void	Request::setBuf(){}
+
+void	Request::setUri(std::string str){
+	_uri = str;
+}
+void	Request::setUrl(std::string str, size_t findQ){
+	if (findQ != std::string::npos)
+		_url = str.substr(0, findQ);
+	else
+		_url = str;
+}
 void	Request::setMethod(std::string str){
 	_method = str;
 }
 void	Request::setHttpVersion(std::string str){
 	_httpVersion = str ;
 }
-void	Request::setQueryString(std::string str){
-	size_t findQ = str.find("?");
+void	Request::setQueryString(std::string str, size_t findQ){
 	if (findQ == std::string::npos)
 		return ;
 	_queryString = str.substr(findQ + 1, str.size()) ;
@@ -69,8 +78,7 @@ void	Request::setBodySize(){
 		_bodySize = static_cast<size_t>(stoll(_headersMap[сonLen]));//С++11
 }
 void	Request::setFirstLine(size_t endLine){
-	std::string	str;
-	
+	std::string	str;	
 	for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
 	{
 		str += *it ;
@@ -90,8 +98,10 @@ void	Request::setFirstLine(size_t endLine){
 	checkMethod(firstLine[0]);
 	setMethod(firstLine[0]) ;
 
-	setUrl(firstLine[1]) ;
-	setQueryString(firstLine[1]) ;
+	size_t findQ = firstLine[1].find("?");
+	setUri(firstLine[1]) ;
+	setUrl(firstLine[1], findQ) ;
+	setQueryString(firstLine[1], findQ) ;
 
 	checkHttpVersion(firstLine[2]);
 	setHttpVersion(firstLine[2]) ;
@@ -124,6 +134,10 @@ void	Request::setHeadersMap(size_t endLine, size_t endHeaders){
 	}
 }
 
+
+std::string	Request::getUri(){
+	return _uri;
+}
 std::string	Request::getUrl(){
 	return _url;
 }
@@ -163,7 +177,7 @@ std::vector<std::string> split2(const std::string& str, const std::string& delim
 }
 
 void	Request::parseReq(std::string req){
-	_buf += req;
+	addBuf(req);
 
 	size_t endLine = _buf.find("\r\n") ;
 	size_t endHeaders = _buf.find("\r\n\r\n") ;

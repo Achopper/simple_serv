@@ -246,10 +246,11 @@ bool Config::parseLocationBlock(std::vector<std::string> &conf, std::vector<std:
 			if (!checkSemicolon(++word) || !location.setMethods(word->substr(0, word->length() - 1)))
 				_err.append(REDCOL"Wrong method list\n" RESCOL);
 		}
-//		else if (*word == "return")
-//		{
-//
-//		}
+		else if (*word == "return")
+		{
+			if (!checkSemicolon(++word) || !location.setRedirect(word->substr(0, word->length() - 1)))
+				_err.append(REDCOL"Wrong redirect directive\n" RESCOL);
+		}
 		else if (*word == "}")
 			break;
 		else
@@ -264,10 +265,9 @@ bool Config::parseLocationBlock(std::vector<std::string> &conf, std::vector<std:
 
 bool Config::checkUnicLocation(Server const & server) const
 {
-	std::vector<Location> tmp = server.getLocList();
-	for (std::vector<Location>::iterator it = tmp.begin(); it != tmp.end(); ++it)
+	for (std::vector<Location>::const_iterator it = server.getLocList().begin(); it != server.getLocList().end(); ++it)
 	{
-		for (std::vector<Location>::iterator jt = it + 1; jt != tmp.end(); ++jt)
+		for (std::vector<Location>::const_iterator jt = it + 1; jt != server.getLocList().end(); ++jt)
 			if (it->getPath() == jt->getPath())
 				return (false);
 	}

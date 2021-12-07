@@ -5,12 +5,12 @@
 
 #include "serv_includes.hpp"
 #include "Server.hpp"
-#include "Client.hpp"
 #include "DefaultPage.hpp"
+#include "Request.hpp"
+#include "Autoindex.hpp"
 
-class Client;
 class Server;
-//class DefaultPage;
+class Client;
 
 class Response
 {
@@ -20,7 +20,8 @@ private:
 	std::string 										_response;
 	std::string											_body;
 	std::string											_method;
-	Client												_client;
+	Server												_server;
+	Request												_request;
 	static std::map<std::string, std::string> 			_statusCodes;
 	static std::map<std::string, std::string> 			_contentType;
 
@@ -33,7 +34,8 @@ private:
 
 public:
 
-	Response											( std::string method,Client & client );
+	Response											( void );
+	Response											( Server &server, Request & request);
 	Response											( Response const & obj );
 	~Response											( void );
 
@@ -44,6 +46,8 @@ public:
 	bool 		setResp									( std::string const & response );
 	bool 		setBody									( std::string const & body );
 	void 		setCode									( std::string const & code );
+	void 		setServer								( Server const & server );
+	void 		setRequest								( Request const & request );
 
 	const std::string & getResp							( void ) const;
 	std::string			getCode							( void ) const;
@@ -55,12 +59,14 @@ public:
 	void 		addContentType							( std::string const & filePath );
 	void 		addServerName							( std::string const & serverName );
 
-	bool 		GET										( Client & client);
+	bool 		GET										( void );
+	bool		DELETE									( void );
 	bool 		getPage									( std::string const & path );
 	void 		fillResponse							( void );
-
-
-
+	bool		checkLocation							( std::string const &locPath, std::string const &reqPath,
+														  std::string & url, bool & isF);
+	void  makeRedirect( std::vector<Location> const & locList,
+														  std::vector<Location>::const_iterator & it);
 };
 
 

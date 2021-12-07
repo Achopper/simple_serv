@@ -10,7 +10,7 @@
 
 #define PROT "HTTP/1.1"
 #define TIMEOUT -1
-#define CLI_TIMEOUT_SEC 15
+#define CLI_TIMEOUT_SEC 30
 #define DEF_CLI_MAX_BDY_SZ 16*1024
 
 

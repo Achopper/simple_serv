@@ -13,6 +13,8 @@ private:
 	std::string 								_index;
 	std::string									_root;
 	bool 										_autoindex;
+	bool 										_redirect;
+	std::string 								_pathToRedirect;
 
 public:
 	Location									( void );
@@ -29,6 +31,7 @@ public:
 	bool 		setClientBodySize				( std::string const & num );
 	bool		setIndex						( std::string const & index );
 	bool 		setRoot							( std::string const & root );
+	bool 		setRedirect						( std::string const & path );
 
 	bool 		getAutoindex					( void ) const;
 	std::string getPath							( void ) const;
@@ -36,6 +39,8 @@ public:
 	std::string getRoot							( void ) const;
 	std::map<std::string, bool>	getMethods		( void ) const;
 	size_t 		getClientSize					( void ) const;
+	const std::string & getPathToRedir			( void ) const;
+	bool isRedirect								( void ) const;
 
 };
 

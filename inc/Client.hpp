@@ -6,6 +6,7 @@
 #include "serv_includes.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
+#include "Response.hpp"
 #include <map>
 
 #define PARSE_FIRST_LINE 1
@@ -15,7 +16,7 @@
 
 
 
-class Response;
+
 
 class Client
 {
@@ -30,7 +31,7 @@ private:
 	std::string 						_req;
 	std::time_t 						_connectTime;
 	bool 								_finishReadReq;
-	Response							*_response;
+	Response							_response;
 	Request								_request;
 
 
@@ -64,12 +65,12 @@ public:
 	std::time_t getConTime				( void ) const;
 	bool	getFinishReadReq 			( void ) const;
 	const Server & getServer			( void ) const;
-	const Response * getResponse		( void ) const;
+	Response * getResponse				( void ) ;
 
 public:
 
 	void deleteClient					( void );
-	void makeResponse					( Response & response);
+	void makeResponse					( );
 public:
 	
 	void					setRequest(std::string  req);

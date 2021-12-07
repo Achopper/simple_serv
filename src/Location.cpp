@@ -4,7 +4,8 @@
 Location::Location() :
 _clientMaxBodySize(DEF_CLI_MAX_BDY_SZ),
 _index(""),
-_autoindex(false)
+_autoindex(false),
+_redirect(false)
 {
 	_methods["GET"] = true;
 	_methods["POST"] = false;
@@ -30,6 +31,8 @@ Location &Location::operator=(const Location &obj)
 		_index = obj._index;
 		_root = obj._root;
 		_autoindex = obj._autoindex;
+		_redirect = obj._redirect;
+		_pathToRedirect = obj._pathToRedirect;
 	}
 	return (*this);
 }
@@ -107,6 +110,13 @@ bool Location::setMethods(const std::string &methods)
 	return (true);
 }
 
+bool Location::setRedirect(std::string const & path )
+{
+	_pathToRedirect = path;
+	_redirect = true;
+	return (true);
+}
+
 bool Location::getAutoindex() const
 {
 	return _autoindex;
@@ -132,9 +142,19 @@ size_t Location::getClientSize() const
 	return (_clientMaxBodySize);
 }
 
-std::map<std::string, bool> Location::getMethods(void) const
+std::map<std::string, bool>Location::getMethods() const
 {
 	return (_methods);
+}
+
+const std::string &Location::getPathToRedir() const
+{
+	return (_pathToRedirect);
+}
+
+bool Location::isRedirect() const
+{
+	return (_redirect);
 }
 
 

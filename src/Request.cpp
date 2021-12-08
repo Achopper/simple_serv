@@ -39,27 +39,27 @@ Request &Request::operator=(const Request &obj)
 	return (*this);
 }
 
-void	Request::addBuf(std::string req){
+void	Request::addBuf(std::string& req){
 
 	_buf += req;
 }
 
-void	Request::setUri(std::string str){
+void	Request::setUri(std::string& str){
 	_uri = str;
 }
-void	Request::setUrl(std::string str, size_t findQ){
+void	Request::setUrl(std::string& str, size_t& findQ){
 	if (findQ != std::string::npos)
 		_url = str.substr(0, findQ);
 	else
 		_url = str;
 }
-void	Request::setMethod(std::string str){
+void	Request::setMethod(std::string& str){
 	_method = str;
 }
-void	Request::setHttpVersion(std::string str){
+void	Request::setHttpVersion(std::string& str){
 	_httpVersion = str ;
 }
-void	Request::setQueryString(std::string str, size_t findQ){
+void	Request::setQueryString(std::string& str, size_t &findQ){
 	if (findQ == std::string::npos)
 		return ;
 	_queryString = str.substr(findQ + 1, str.size()) ;
@@ -81,7 +81,8 @@ void	Request::setBodySize(){
 	if (!_headersMap[сonLen].empty())
 		_bodySize = static_cast<size_t>(stoll(_headersMap[сonLen]));//С++11
 }
-void	Request::setFirstLine(size_t endLine){
+
+void	Request::setFirstLine(size_t &endLine){
 	std::string	str;	
 	for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
 	{
@@ -111,10 +112,11 @@ void	Request::setFirstLine(size_t endLine){
 	checkHttpVersion(firstLine[2]);
 	setHttpVersion(firstLine[2]) ;
 	
-	_isFirstLineSet = 1;
+	_isFirstLineSet = true;
+	std::cout << "!!!!!!!!! _buf from 1 line "<< _buf << std::endl;
 	_buf.erase(0, endLine + 2) ;
 }
-void	Request::setHeadersMap(size_t endLine, size_t endHeaders){
+void	Request::setHeadersMap(size_t & endLine, size_t & endHeaders){
 
 	std::string	str;
 
@@ -162,7 +164,7 @@ std::string	Request::getMethod(){
 	return _method;
 }
 std::string	Request::getErrCode(){
-	return _errCode
+	return _errCode;
 }
 std::string	Request::getHttpVersion(){
 	return _httpVersion;
@@ -193,7 +195,7 @@ std::vector<std::string> split2(const std::string& str, const std::string& delim
     return tokens;
 }
 
-void	Request::parseReq(std::string req){
+void	Request::parseReq(std::string & req){
 	// addBuf(req);
 	_buf += req;
 	size_t endLine = _buf.find("\r\n") ;
@@ -223,7 +225,9 @@ void	Request::parseReq(std::string req){
 		}
 		if ((_method == "GET" && _isHeadersEnd) || ((_method == "POST" || _method == "DELETE") && _isBodyEnd))
 		{	
-			_isRequestEnd = 1;
+			_isRequestEnd = true;
+			if (_method == "GET")
+				break;
 
 	std::cout << "!!!!!!!!! _isRequestEnd = 1" << std::endl;
 	}
@@ -238,7 +242,7 @@ void	Request::parseReq(std::string req){
 	// std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;
 }
 
-void	Request::checkMethod(std::string method){
+void	Request::checkMethod(std::string &method){
 	if (method != "POST" && method != "GET" && method != "DELETE")
 	{
 		std::string msg = "Wrong method";
@@ -246,7 +250,7 @@ void	Request::checkMethod(std::string method){
 		throw std::exception();
 	}
 }
-void	Request::checkHttpVersion(std::string httpVersion){
+void	Request::checkHttpVersion(std::string& httpVersion){
 	if (httpVersion != "HTTP/1.1")
 	{
 		_errCode = "505";

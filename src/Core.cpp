@@ -178,7 +178,7 @@ void Core::mainLoop() {
 					std::cout << std::endl;
 
 				}
-				if (cli_it->getRequest().getIsRequestEnd())
+				if (!cli_it->getRequest().getIsRequestEnd())
 					continue;
 				// std::string::size_type pos = cli_it->getReq().find("\r\n\r\n");
 				// if (pos == std::string::npos)

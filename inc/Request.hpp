@@ -43,17 +43,17 @@ public:
 	~Request								( void );
 	Request&								operator=( Request const& obj );
 
-	void									addBuf(std::string req);
+	void									addBuf(std::string & req);
 
-	void									setUri(std::string str);
-	void									setUrl(std::string str, size_t findQ);
+	void									setUri(std::string & str);
+	void									setUrl(std::string & str, size_t &findQ);
 	void									setBody();
-	void									setMethod(std::string str);
+	void									setMethod(std::string &str);
 	void									setBodySize();
-	void									setHttpVersion(std::string str);
-	void									setQueryString(std::string str, size_t findQ);
-	void									setHeadersMap(size_t endLine, size_t endHeaders);
-	void									setFirstLine(size_t endLine);
+	void									setHttpVersion(std::string &str);
+	void									setQueryString(std::string &str, size_t &findQ);
+	void									setHeadersMap(size_t &endLine, size_t &endHeaders);
+	void									setFirstLine(size_t &endLine);
 
 	std::string								getUri();
 	std::string								getUrl();
@@ -67,9 +67,9 @@ public:
 
 	std::map<std::string, std::string>		getHeadersMap();
 
-	void									parseReq(std::string req);
-	void									checkHttpVersion(std::string httpVersion);
-	void									checkMethod(std::string method);
+	void									parseReq(std::string & req);
+	void									checkHttpVersion(std::string & httpVersion);
+	void									checkMethod(std::string & method);
 	void									checkBodyHeders();
 
 

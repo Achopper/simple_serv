@@ -15,12 +15,9 @@ std::map<std::string, std::string> Response::setStatusCode()
 	res.insert(std::pair<std::string, std::string>("413", "Payload Too Large"));
 	res.insert(std::pair<std::string, std::string>("414", "Request-URI Too Long"));
 	res.insert(std::pair<std::string, std::string>("416", "Requested Range Not Satisfiable"));
-	res.insert(std::pair<std::string, std::string>("405", "Method Not Allowed"));
 	res.insert(std::pair<std::string, std::string>("408", "Request Timeout"));
 
 	res.insert(std::pair<std::string, std::string>("505", "HTTP Version Not Supported"));
-
-
 
 	return (res);
 }

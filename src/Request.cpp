@@ -8,6 +8,7 @@ Request::Request ( void )
 	_isHeadersEnd = 0;
 	_isBodyEnd = 0;
 	_bodySize = 0;
+	_isRequestEnd = 0;
 	_firstLineSize = 0;
 	_firstLineMaxSize = 2063;//2048 + 15
 }
@@ -64,6 +65,9 @@ void	Request::setQueryString(std::string str, size_t findQ){
 	_queryString = str.substr(findQ + 1, str.size()) ;
 }
 void	Request::setBody(){
+
+	std::cout << "!!!!!!!!! before checkBodyHeders";
+	checkBodyHeders();
 	for ( std::string::iterator it=_buf.begin(); it!=_buf.end() && _bodySize; ++it)
 	{
 		_body += *it ;
@@ -89,6 +93,7 @@ void	Request::setFirstLine(size_t endLine){
 			throw  std::exception();
 		}
 	}
+	std::cout<<"!!!!! str from setFirstLine "<<str<<std::endl;
 	std::vector<std::string> firstLine = split2(str, " ");
 	if (firstLine.size() != 3)
 	{
@@ -107,31 +112,41 @@ void	Request::setFirstLine(size_t endLine){
 	setHttpVersion(firstLine[2]) ;
 	
 	_isFirstLineSet = 1;
+	std::cout << "!!!!!!!!! _buf from 1 line "<< _buf << std::endl;
 	_buf.erase(0, endLine + 2) ;
+	std::cout << "!!!!!!!!! _buf  1 line "<< _buf << std::endl;
 }
 void	Request::setHeadersMap(size_t endLine, size_t endHeaders){
 
 	std::string	str;
+
+	// std::cout << "!!!!!!!!! endLine "<< endLine << std::endl;
+	// std::cout << "!!!!!!!!! endHeaders "<< endHeaders << std::endl;
+
+	std::cout << "!!!!!!!!! _buf from headers set "<< _buf << std::endl;
 	for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
 		str += *it ;
-					
+	
+	std::cout<<"!!!!! str from setHeadersMap "<<str<<std::endl;
 	std::vector<std::string> headLines = split2(str, ": ");
 	if (headLines.size() == 2)
 		_headersMap[headLines[0]] = headLines[1];
-	else
+	else{
+		_errCode = "400";
 		throw std::exception();
+	}
 
-	if (endHeaders == endLine )
-	{
+	if (endHeaders == endLine && (endHeaders != std::string::npos && endLine != std::string::npos)) {
 		_buf.erase(0, endLine + 4) ;
 		str.clear();
 		_isHeadersEnd = 1;
 	}
-	else
-	{
+	else {
 		_buf.erase(0, endLine + 2) ;
 		str.clear();
 	}
+
+	std::cout << "!!!!!!!!! _isHeadersEnd "<< _isHeadersEnd << std::endl;
 }
 
 
@@ -150,12 +165,18 @@ std::string	Request::getBody(){
 std::string	Request::getMethod(){
 	return _method;
 }
+std::string	Request::getErrCode(){
+	return _errCode;
+}
 std::string	Request::getHttpVersion(){
 	return _httpVersion;
 }
 std::string	Request::getQueryString(){
 		return _queryString;
 	}
+bool	Request::getIsRequestEnd(){
+	return _isRequestEnd;
+}
 std::map<std::string, std::string>	Request::getHeadersMap(){
 	return _headersMap;
 }
@@ -177,11 +198,17 @@ std::vector<std::string> split2(const std::string& str, const std::string& delim
 }
 
 void	Request::parseReq(std::string req){
-	addBuf(req);
-
+	// addBuf(req);
+	_buf += req;
 	size_t endLine = _buf.find("\r\n") ;
 	size_t endHeaders = _buf.find("\r\n\r\n") ;
 	
+
+	// std::cout << "!!!!!!!!! is first line set "<< _isFirstLineSet << std::endl;
+	// std::cout << "!!!!!!!!! is headers set "<< _isHeadersEnd << std::endl;
+	// std::cout << "!!!!!!!!! _buf "<< _buf << std::endl;
+	// std::cout << "!!!!!!!!! endLine "<< endLine << std::endl;
+	// std::cout << "!!!!!!!!! endHeaders "<< endHeaders << std::endl;
 	while(endLine != static_cast<size_t>(-1) && !_isBodyEnd)
 	{
 		if (!_isFirstLineSet)
@@ -191,10 +218,23 @@ void	Request::parseReq(std::string req){
 			setHeadersMap(endLine, endHeaders);
 			setBodySize();
 		}
-		else if (_isHeadersEnd && _method == "POST")
+		else if (_isHeadersEnd && (_method == "POST" || _method == "DELETE"))
+		{
+	std::cout << "!!!!!!!!! before setBody" << std::endl;
+	
 			setBody();
+		}
+		if ((_method == "GET" && _isHeadersEnd) || ((_method == "POST" || _method == "DELETE") && _isBodyEnd))
+		{	
+			_isRequestEnd = 1;
+
+	std::cout << "!!!!!!!!! _isRequestEnd = 1" << std::endl;
+	}
 		endLine = _buf.find("\r\n") ;
 		endHeaders = _buf.find("\r\n\r\n") ;
+
+	std::cout << "!!!!!!!!! endLine "<< endLine << std::endl;
+	std::cout << "!!!!!!!!! endHeaders "<< endHeaders << std::endl;
 
 	}
 	// for (std::map<std::string, std::string>::iterator it = _headersMap.begin(); it != _headersMap.end(); ++it)
@@ -204,6 +244,7 @@ void	Request::parseReq(std::string req){
 void	Request::checkMethod(std::string method){
 	if (method != "POST" && method != "GET" && method != "DELETE")
 	{
+		std::string msg = "Wrong method";
 		_errCode = "405";
 		throw std::exception();
 	}
@@ -214,4 +255,12 @@ void	Request::checkHttpVersion(std::string httpVersion){
 		_errCode = "505";
 		throw std::exception();
 	}
+}
+void	Request::checkBodyHeders(){
+	std::string сonLen("Content-Length");
+	std::string transfEncod("Transfer-Encoding");
+	if (_headersMap[сonLen].empty() && _headersMap[transfEncod].empty()){
+		std::cout << "!!!!!!!!! no сonLen transfEncod";
+		throw std::exception();
+		}
 }

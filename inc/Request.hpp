@@ -20,6 +20,7 @@ private:
 	bool									_isFirstLineSet;
 	bool									_isHeadersEnd;
 	bool									_isBodyEnd;
+	bool									_isRequestEnd;
 
 	std::string								_errCode;
 	std::string								_method;
@@ -59,14 +60,17 @@ public:
 	std::string								getBuf();
 	std::string								getBody();
 	std::string								getMethod();
+	std::string								getErrCode();
 	std::string								getHttpVersion();
 	std::string								getQueryString();
+	bool									getIsRequestEnd();
 
 	std::map<std::string, std::string>		getHeadersMap();
 
 	void									parseReq(std::string req);
 	void									checkHttpVersion(std::string httpVersion);
 	void									checkMethod(std::string method);
+	void									checkBodyHeders();
 
 
 };

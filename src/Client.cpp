@@ -155,7 +155,9 @@ void	Client::setRequest(std::string  req)
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cout << "ИСКЛЮЧЕНИЕ ПАРСИНГ!!!!!!!!!!!!" << std::endl;
+		std::cout << "КОД!!!!!!!!!!!!  "  << _request.getErrCode() << std::endl;
+		// std::cerr << e.what() << '\n';
 	}
 	
 }

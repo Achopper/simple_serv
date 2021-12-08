@@ -59,6 +59,7 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 
 
 	valread = recv(it->getSetFd()->fd, buf, DEF_CLI_MAX_BDY_SZ, 0);
+	std::cout << REDCOL << valread << RESCOL <<std::endl;
 	it->setConnTime();
 	if (valread < 0)
 	{
@@ -75,7 +76,7 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 	}
 	else if (valread > 0)
 	{
-		it->setReq(it->getReq().append(buf, static_cast<size_t>(valread)));
+		it->setReq(buf);
 #if DEBUG_MODE > 0
 		std::cout <<GREENCOL "client " << it->getSetFd()->fd << " reсive " << valread << " bytes and revent: " <<
 		it->getSetFd()->revents << RESCOL << std::endl;
@@ -177,9 +178,11 @@ void Core::mainLoop() {
 					std::cout << std::endl;
 
 				}
-				std::string::size_type pos = cli_it->getReq().find("\r\n\r\n");
-				if (pos == std::string::npos)
+				if (cli_it->getRequest().getIsRequestEnd())
 					continue;
+				// std::string::size_type pos = cli_it->getReq().find("\r\n\r\n");
+				// if (pos == std::string::npos)
+				// 	continue;
 				else
 				{
 					cli_it->getSetFd()->revents &= ~(POLLRDNORM | POLLERR);

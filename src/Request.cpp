@@ -93,7 +93,7 @@ void	Request::setFirstLine(size_t endLine){
 			throw  std::exception();
 		}
 	}
-	std::cout<<"!!!!! str from setFirstLine "<<str<<std::endl;
+	std::cout<<"!!!!! str from setFirstLine"<<str<<std::endl;
 	std::vector<std::string> firstLine = split2(str, " ");
 	if (firstLine.size() != 3)
 	{
@@ -112,9 +112,7 @@ void	Request::setFirstLine(size_t endLine){
 	setHttpVersion(firstLine[2]) ;
 	
 	_isFirstLineSet = 1;
-	std::cout << "!!!!!!!!! _buf from 1 line "<< _buf << std::endl;
 	_buf.erase(0, endLine + 2) ;
-	std::cout << "!!!!!!!!! _buf  1 line "<< _buf << std::endl;
 }
 void	Request::setHeadersMap(size_t endLine, size_t endHeaders){
 
@@ -122,26 +120,24 @@ void	Request::setHeadersMap(size_t endLine, size_t endHeaders){
 
 	// std::cout << "!!!!!!!!! endLine "<< endLine << std::endl;
 	// std::cout << "!!!!!!!!! endHeaders "<< endHeaders << std::endl;
-
-	std::cout << "!!!!!!!!! _buf from headers set "<< _buf << std::endl;
 	for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
 		str += *it ;
 	
-	std::cout<<"!!!!! str from setHeadersMap "<<str<<std::endl;
+	std::cout<<"!!!!! str from setHeadersMap"<<str<<std::endl;
 	std::vector<std::string> headLines = split2(str, ": ");
 	if (headLines.size() == 2)
 		_headersMap[headLines[0]] = headLines[1];
-	else{
-		_errCode = "400";
+	else
 		throw std::exception();
-	}
 
-	if (endHeaders == endLine && (endHeaders != std::string::npos && endLine != std::string::npos)) {
+	if (endHeaders == endLine )
+	{
 		_buf.erase(0, endLine + 4) ;
 		str.clear();
 		_isHeadersEnd = 1;
 	}
-	else {
+	else
+	{
 		_buf.erase(0, endLine + 2) ;
 		str.clear();
 	}
@@ -166,7 +162,7 @@ std::string	Request::getMethod(){
 	return _method;
 }
 std::string	Request::getErrCode(){
-	return _errCode;
+	return _errCode
 }
 std::string	Request::getHttpVersion(){
 	return _httpVersion;
@@ -205,7 +201,7 @@ void	Request::parseReq(std::string req){
 	
 
 	// std::cout << "!!!!!!!!! is first line set "<< _isFirstLineSet << std::endl;
-	// std::cout << "!!!!!!!!! is headers set "<< _isHeadersEnd << std::endl;
+	std::cout << "!!!!!!!!! is headers set "<< _isHeadersEnd << std::endl;
 	// std::cout << "!!!!!!!!! _buf "<< _buf << std::endl;
 	// std::cout << "!!!!!!!!! endLine "<< endLine << std::endl;
 	// std::cout << "!!!!!!!!! endHeaders "<< endHeaders << std::endl;
@@ -218,7 +214,8 @@ void	Request::parseReq(std::string req){
 			setHeadersMap(endLine, endHeaders);
 			setBodySize();
 		}
-		else if (_isHeadersEnd && (_method == "POST" || _method == "DELETE"))
+		// else if (_isHeadersEnd && (_method == "POST" || _method == "DELETE"))
+		else if (_isHeadersEnd)
 		{
 	std::cout << "!!!!!!!!! before setBody" << std::endl;
 	

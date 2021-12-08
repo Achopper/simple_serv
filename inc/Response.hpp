@@ -22,10 +22,9 @@ private:
 	std::string											_method;
 	Server												_server;
 	Request												_request;
+	size_t 												_maxLen;
 	static std::map<std::string, std::string> 			_statusCodes;
 	static std::map<std::string, std::string> 			_contentType;
-
-
 
 private:
 
@@ -63,9 +62,9 @@ public:
 	bool		DELETE									( void );
 	bool 		getPage									( std::string const & path );
 	void 		fillResponse							( void );
-	bool		checkLocation							( std::string const &locPath, std::string const &reqPath,
-														  std::string & url, bool & isF);
-	void  makeRedirect( std::vector<Location> const & locList,
+	bool		checkLocation							(  std::vector<Location>::const_iterator &lit,
+															std::string const &reqPath, std::string & url, bool & isF);
+	void  makeRedirect									( std::vector<Location> const & locList,
 														  std::vector<Location>::const_iterator & it);
 };
 

@@ -54,7 +54,7 @@ public:
 
 	std::map<std::string, std::string>		getHeadersMap();
 
-	void									parseReq(std::string req);
+	void									parseReq(std::string const & req);
 
 
 };

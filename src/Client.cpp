@@ -132,9 +132,10 @@ void Client::makeResponse()
 	}
 	if (_request.getMethod() == "GET")
 		_response.GET();
+	else if (_request.getMethod() == "DELETE")
+		_response.DELETE();
 	else
 		_response.setCode("405");
-	//esle if ("POST")
 	_response.fillResponse();
 #if DEBUG_MODE > 0
 	std::cout <<GREENCOL "Response of client " << _setFd->fd << ": " << RESCOL << std::endl << _response.getResp()  <<
@@ -144,7 +145,7 @@ void Client::makeResponse()
 }
 
 
-void	Client::setRequest(std::string  req)
+void	Client::setRequest(std::string const &req)
 {
 	_request.parseReq(req);
 }

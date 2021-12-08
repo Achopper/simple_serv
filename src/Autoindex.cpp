@@ -22,12 +22,15 @@ void Autoindex::getNames(DIR *dir)
 bool Autoindex::makePage(const std::string &path, const std::string & locPath)
 {
 	DIR *dir = opendir(path.c_str());
+	std::string _locPath(locPath);
 	if (!dir)
 		return (false);
 	else
 	{
-		std::string _locPath(locPath);
-		if (_locPath.length() > 1 && locPath[locPath.length() - 1] != '/')
+		std::string::size_type pos;
+		if ((pos = path.rfind('/')) != 1)
+			_locPath = path.substr(strchr((path.data() + 2), '/') - &path[0], path.length());
+		if (_locPath.length() > 1 && _locPath[_locPath.length() - 1] != '/')
 			_locPath += '/';
 		getNames(dir);
 		_page.append("<!DOCTYPE html>\n");

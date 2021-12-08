@@ -23,8 +23,6 @@ class Client
 
 private:
 
-
-
 	Server								_server;
 	pollfd								*_setFd;
 	std::string							_body; //TODO ?
@@ -34,13 +32,7 @@ private:
 	Response							_response;
 	Request								_request;
 
-
 public:
-
-//		std::string method;
-//		std::string path;
-//		std::string prot;
-//		//TODO test
 
 	Client								( Server const & server, pollfd *set );
 	Client								( Client const& obj );
@@ -65,19 +57,19 @@ public:
 	std::time_t getConTime				( void ) const;
 	bool	getFinishReadReq 			( void ) const;
 	const Server & getServer			( void ) const;
-	Response * getResponse				( void ) ;
+	Response * getResponse				( void );
 
 public:
 
 	void deleteClient					( void );
-	void makeResponse					( );
+	void makeResponse					( void );
 public:
 	
-	void					setRequest(std::string  req);
-	Request&				getRequest( void );
+	void					setRequest	( std::string const & req );
+	Request&				getRequest	( void );
 
 };
 
-std::vector<std::string> split2(const std::string& str, const std::string& delim) ;
+std::vector<std::string> split2			(const std::string& str, const std::string& delim) ;
 
 #endif //CLIENT_HPP

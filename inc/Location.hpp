@@ -7,6 +7,8 @@
 class Location {
 private:
 
+	std::string 								_name;
+	std::string 								_alias;
 	std::string 								_path;
 	std::map<std::string, bool> 				_methods;
 	size_t 										_clientMaxBodySize;
@@ -25,14 +27,17 @@ public:
 
 public:
 
-	bool		setPath							( std::string const & path );
+	bool 		setName							( std::string const & name );
+	bool 		setAlias						( std::string const & alias );
 	bool 		setAutoindex					( std::string const & autoindex );
 	bool		setMethods						( std::string const & methods );
 	bool 		setClientBodySize				( std::string const & num );
 	bool		setIndex						( std::string const & index );
 	bool 		setRoot							( std::string const & root );
 	bool 		setRedirect						( std::string const & path );
+	bool		setPath							( std::string const & serverRoot, std::string & err );
 
+	const std::string & getName					( void ) const;
 	bool 		getAutoindex					( void ) const;
 	std::string getPath							( void ) const;
 	std::string getIndex						( void ) const;

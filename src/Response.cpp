@@ -64,6 +64,8 @@ Response &Response::operator=(const Response &obj)
 		_method = obj._method;
 		_server = obj._server;
 		_request = obj._request;
+		_maxLen = obj._maxLen;
+		_body = obj._body;
 	}
 	return (*this);
 }
@@ -174,7 +176,15 @@ bool Response::getPage(std::string const &path)
 	else
 	{
 		while (std::getline(page, line))
+		{
 			_body += line + "\n";
+			if (_body.length() > _maxLen)
+			{
+				_code = "413";
+				page.close();
+				return (false);
+			}
+		}
 		_code.length() > 0 ? "red" :_code = "200";
 	}
 	page.close();
@@ -191,31 +201,31 @@ void Response::makeRedirect(std::vector<Location> const & locList, std::vector<L
 		}
 }
 
-bool Response::checkLocation(std::string const &locPath, std::string const &reqPath, std::string & url,
+bool Response::checkLocation(std::vector<Location>::const_iterator &iter, std::string const &reqPath, std::string & url,
 							 bool &isF)
 {
-	std::string _reqPath;
+	std::string::size_type nameLen = iter->getName().length();
+	std::string::size_type pos;
 	std::string _filename;
 	std::string _prefix;
-	std::string::size_type pos = reqPath.find('.');
+	std::string _postfix;
+
+	_prefix = reqPath.substr(0, nameLen);
+	_postfix = reqPath.substr(_prefix.length(), reqPath.length() - _prefix.length());
+	if ( !_postfix.empty() && _postfix.at(0) != '/')
+		_postfix = '/' + _postfix;
+	pos = _postfix.find('.');
 	if (pos != std::string::npos)
 	{
-		_filename = std::string(std::strrchr(reqPath.c_str(), '/'));
-		_filename = _filename.substr(1, _filename.length());
 		isF = true;
+		if (_postfix == _filename)
+			_postfix = "";
+		_filename = std::string(std::strrchr(reqPath.c_str(), '/'));
+		_postfix = _postfix.substr(0,_postfix.length() - _filename.length());
 	}
-	if ((strrchr(reqPath.c_str(), '/') - &reqPath[0] == 0) && _filename.length() == 0)
-		_prefix = reqPath;
-	else if ((strrchr(reqPath.c_str(), '/') - &reqPath[0] == 0) && _filename.length() > 1)
-		_prefix = '/';
-	else
-		_prefix = reqPath.substr(0, (unsigned long)(strrchr(reqPath.c_str(), '/') - &reqPath[0]));
-	if (locPath == _prefix || _prefix == reqPath)
+	if (_prefix == iter->getName())
 	{
-		if (isF)
-			url = '/' + _filename;
-		else
-			_prefix.length() > 1 ? url = _prefix + '/' : url = _prefix;
+		url = iter->getPath() + _postfix + _filename;
 		return (true);
 	}
 	return (false);
@@ -229,67 +239,44 @@ bool Response::GET()
 	const std::vector<Location> & loclist = _server.getLocList();
 	for (std::vector<Location>::const_iterator iter = loclist.begin(); iter != loclist.end(); ++iter)
 	{
-		for (std::vector<Location>::const_iterator _iter = loclist.begin(); _iter != loclist.end(); ++_iter)
+		if (checkLocation(iter, _request.getUrl(), url, isFile))
 		{
-			if (_request.getUrl() == _iter->getPath())
-				iter = _iter;
-		}
-		if (checkLocation(iter->getPath(), _request.getUrl(), url, isFile))
-		{
-			if (iter->isRedirect())
-			{
-				url = iter->getPathToRedir();
-				makeRedirect(loclist, iter);
-			}
-			if (!(iter->getMethods()[_request.getMethod()]))
-			{
-				_code = "405";
-				return (false);
-			}
-#if DEBUG_MODE > 0
-			std::cout << "location path: " << REDCOL << iter->getPath() << std::endl <<
-					  "request path: " << _request.getUrl() << std::endl <<
-					  "new path: " << url << RESCOL << std::endl;
-#endif
-			if (iter->getIndex().empty() && !iter->getAutoindex())
-			{
-				_body = page.makePage("", "Welcome to ", _server.getServName());
-				_code.length() > 0 ? "red" :_code = "200";
-			}
-			else if (iter->getAutoindex() && iter->getIndex().empty() && !isFile)
+			_maxLen = iter->getClientSize();
+			if (!iter->getAutoindex() && iter->getIndex().empty() && url.empty())
+				_body = page.makePage("200", "Welcome to", _server.getServName());
+			else if (iter->getIndex().length() == 0 && iter->getAutoindex() && !isFile)
 			{
 				Autoindex autoindex;
-				if (_request.getUrl() != iter->getPath())
-					autoindex.makePage(_server.getRoot() + iter->getRoot() + url, url);
-				else
-					autoindex.makePage(_server.getRoot() + iter->getRoot(), url);
+				if (!autoindex.makePage(url, iter->getName()))
+				{
+					_code = "404";
+					return (false);
+				}
 				_body = autoindex.getPage();
-				_code.length() > 0 ? "red" :_code = "200";
+				_code = "200";
+				return (true);
 			}
-			else if (_request.getUrl() == iter->getPath())
+			else if (isFile && iter->getIndex().empty())
 			{
-				if (!getPage(_server.getRoot() + iter->getRoot() + '/' + iter->getIndex()))
-				{
-					_code = "404";
-					return (false);
-				}
+				getPage(url);
+				return (true);
 			}
-			else
-				if (!getPage(_server.getRoot() + iter->getRoot() + url + iter->getIndex()))
-				{
-					_code = "404";
-					return (false);
-				}
-			if (_body.length() > iter->getClientSize())
+			else if (!iter->getIndex().empty())
 			{
-				_code = "413";
-				return (false);
+				if (*url.end() != '/')
+					url.append("/");
+				getPage(url + iter->getIndex());
+				return (true);
 			}
-			return (true);
 		}
 	}
 	_code = "403";
 	return (false);
+}
+
+bool Response::DELETE()
+{
+	return false;
 }
 
 

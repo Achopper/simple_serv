@@ -216,7 +216,7 @@ bool Config::parseLocationBlock(std::vector<std::string> &conf, std::vector<std:
 {
 	Location location;
 
-	if (!location.setPath(*word++) || *word != "{")
+	if (!location.setName(*word++) || *word != "{")
 		_err.append(REDCOL"Error in config. Expected \"{\" after \"location path\"\n" RESCOL);
 	word++;
 	for (; word != conf.end();)
@@ -225,6 +225,11 @@ bool Config::parseLocationBlock(std::vector<std::string> &conf, std::vector<std:
 		{
 			if(!checkSemicolon(++word) || !location.setRoot((word)->substr(0, (word)->length() - 1)))
 				_err.append(REDCOL"Wrong root directive in location block\n" RESCOL);
+		}
+		else if (*word == "alias")
+		{
+			if(!checkSemicolon(++word) || !location.setAlias((word)->substr(0, (word)->length() - 1)))
+				_err.append(REDCOL"Wrong alias directive in location block\n" RESCOL);
 		}
 		else if (*word == "index")
 		{
@@ -257,6 +262,7 @@ bool Config::parseLocationBlock(std::vector<std::string> &conf, std::vector<std:
 			_err.append(REDCOL"Unknown config parametr in location block: " + *word + "\n" RESCOL);
 		*++word;
 	}
+	location.setPath(server.getRoot(), _err);
 	if (_err.length() > 0 )
 		return (false);
 	server.setLocList(location);

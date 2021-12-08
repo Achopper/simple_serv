@@ -25,6 +25,8 @@ Location &Location::operator=(const Location &obj)
 {
 	if (this != &obj)
 	{
+		_name = obj._name;
+		_alias = obj._alias;
 		_path = obj._path;
 		_methods = obj._methods;
 		_clientMaxBodySize = obj._clientMaxBodySize;
@@ -37,15 +39,38 @@ Location &Location::operator=(const Location &obj)
 	return (*this);
 }
 
-bool Location::setPath(const std::string &path)
+bool Location::setPath(std::string const & serverRoot, std::string &err)
 {
-	if (path[0] != '/' || path[path.length() - 1] != '/')
+	if (_root.empty() && _alias.empty())
 	{
-		std::cout << REDCOL"Location block must start and end with '/'" << RESCOL << std::endl;
+		err.append("REDCOL\"Need define root path or alias path\n" RESCOL);
 		return (false);
 	}
-	path.length() > 1 ? _path = path.substr(0, path.length() - 1) : _path = path;
-	return (true);
+	if (_root.length() > 0 && _alias.length() > 0)
+	{
+		err.append("REDCOL\"Location block must have alias or root path\n" RESCOL);
+		return (false);
+	}
+	if (_root.length() > 0)
+	{
+		if (_name.length() > 1)
+			_path = serverRoot + _root + _name;
+		else
+			_path = serverRoot + _root;
+		return (true);
+	}
+	else if (_alias.length() > 0)
+	{
+		_path = serverRoot + _alias;
+		return (true);
+	}
+//	if (path[0] != '/' || path[path.length() - 1] != '/')
+//	{
+//		std::cout << REDCOL"Location block must start and end with '/'" << RESCOL << std::endl;
+//		return (false);
+//	}
+//	path.length() > 1 ? _path = path.substr(0, path.length() - 1) : _path = path;
+//	return (true);
 }
 
 bool Location::setAutoindex(std::string const & autoindex)
@@ -74,6 +99,8 @@ bool Location::setRoot(const std::string &root)
 
 bool Location::setIndex(const std::string &index)
 {
+	if (index.empty() || index == ";")
+		return (false);
 	_index = index;
 	return (true);
 }
@@ -155,6 +182,33 @@ const std::string &Location::getPathToRedir() const
 bool Location::isRedirect() const
 {
 	return (_redirect);
+}
+
+const std::string &Location::getName() const
+{
+	return (_name);
+}
+
+bool Location::setName(const std::string &name)
+{
+	if (name[0] != '/' || name[name.length() - 1] != '/')
+	{
+		std::cout << REDCOL"Location block must start and end with '/'" << RESCOL << std::endl;
+		return (false);
+	}
+	name.length() > 1 ? _name = name.substr(0, name.length() - 1) : _name = name;
+	return (true);
+}
+
+bool Location::setAlias(const std::string &alias)
+{
+	if (alias[0] != '/')
+	{
+		std::cout << REDCOL"Root path must start with '/'" << RESCOL <<  std::endl;
+		return (false);
+	}
+	_alias = alias;
+	return (true);
 }
 
 

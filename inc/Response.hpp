@@ -60,12 +60,13 @@ public:
 
 	bool 		GET										( void );
 	bool		DELETE									( void );
+	bool 		POST									( void );
 	bool 		getPage									( std::string const & path );
 	void 		fillResponse							( void );
 	bool		checkLocation							(  std::vector<Location>::const_iterator &lit,
 															std::string const &reqPath, std::string & url, bool & isF);
 	void  makeRedirect									( std::vector<Location> const & locList,
-														  std::vector<Location>::const_iterator & it);
+														  std::vector<Location>::const_iterator & it, std::string &url);
 };
 
 

@@ -198,10 +198,6 @@ void Core::mainLoop() {
 					<< " is: " << std::endl << cli_it->getReq() << std::endl;
 #endif
 
-				//Response response(cli_it->getRequest().getMethod(), *cli_it);
-//				cli_it->setResponse(response);
-				//cli_it->getResponse()->setServer(cli_it->getServer());
-				//cli_it->getResponse()->setRequest(cli_it->getRequest());
 				sendResponce(cli_it, numfds);
 			}
 			if (!_clientList.empty() && std::difftime(std::time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
@@ -211,8 +207,6 @@ void Core::mainLoop() {
 						  std::endl;
 #endif
 				cli_it->getResponse()->setCode("408");
-				//cli_it->getResponse()->setServer(cli_it->getServer());
-				//cli_it->getResponse()->setRequest(cli_it->getRequest());
 				sendResponce(cli_it, numfds);
 			}
 		}

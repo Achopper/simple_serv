@@ -120,10 +120,15 @@ void Client::deleteClient()
 	_setFd->revents = 0;
 }
 
-
-
 void Client::makeResponse()
 {
+	if (_request.getHttpVersion() != PROT && _response.getCode() != "408")
+	{
+		_response.setCode("505");
+		_response.fillResponse();
+		std::cout << _response.getResp() << std::endl;;
+		return;
+	}
 	if (_response.getCode() == "408" || _response.getCode() == "405")
 	{
 		_response.fillResponse();
@@ -134,6 +139,8 @@ void Client::makeResponse()
 		_response.GET();
 	else if (_request.getMethod() == "DELETE")
 		_response.DELETE();
+	else if (_request.getMethod() == "POST")
+		_response.POST();
 	else
 		_response.setCode("405");
 	_response.fillResponse();

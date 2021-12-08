@@ -36,6 +36,7 @@ bool Autoindex::makePage(const std::string &path, const std::string & locPath)
 		_page.append("<!DOCTYPE html>\n");
 		_page.append("<html lang=\"en\">\n");
 		_page.append("<head>\n");
+		_page.append("<link rel=\"shortcut icon\" type=\"image/ico\" href=\"images/favicon.ico\"/>");
 		_page.append("<meta charset=\"UTF-8\">\n");
 		_page.append("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n");
 		_page.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=2.0\">\n");

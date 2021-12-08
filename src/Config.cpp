@@ -274,7 +274,7 @@ bool Config::checkUnicLocation(Server const & server) const
 	for (std::vector<Location>::const_iterator it = server.getLocList().begin(); it != server.getLocList().end(); ++it)
 	{
 		for (std::vector<Location>::const_iterator jt = it + 1; jt != server.getLocList().end(); ++jt)
-			if (it->getPath() == jt->getPath())
+			if (it->getName() == jt->getName())
 				return (false);
 	}
 	return (true);

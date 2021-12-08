@@ -148,8 +148,6 @@ void Response::fillResponse()
 {
 	DefaultPage errorPage;
 	std::map<std::string, std::string> er = _server.getErrPage();
-	if (_request.getHttpVersion() != PROT && _code != "408")
-		_code = "505";
 	addCodetoResp(_code);
 	if ((_code.at(0) == '4' || _code.at(0) == '5') && er.count(_code) > 0)
 		getPage(_server.getRoot() + er[_code]);
@@ -190,12 +188,14 @@ bool Response::getPage(std::string const &path)
 	page.close();
 	return true;
 }
-void Response::makeRedirect(std::vector<Location> const & locList, std::vector<Location>::const_iterator & it)
+void Response::makeRedirect(std::vector<Location> const & locList, std::vector<Location>::const_iterator & it,
+							std::string & url)
 {
 	for (std::vector<Location>::const_iterator _iter = locList.begin(); _iter != locList.end(); ++_iter)
-		if (_iter->getPath() == it->getPathToRedir())
+		if (_iter->getName() == it->getPathToRedir())
 		{
 			it = _iter;
+			url = it->getPath();
 			_code = "301";
 			break;
 		}
@@ -241,7 +241,14 @@ bool Response::GET()
 	{
 		if (checkLocation(iter, _request.getUrl(), url, isFile))
 		{
+			if (!iter->getPathToRedir().empty())
+				makeRedirect(loclist, iter, url);
 			_maxLen = iter->getClientSize();
+			if (!iter->getMethods()[_request.getMethod()])
+			{
+				_code = "405";
+				return (false);
+			}
 			if (!iter->getAutoindex() && iter->getIndex().empty() && url.empty())
 				_body = page.makePage("200", "Welcome to", _server.getServName());
 			else if (iter->getIndex().length() == 0 && iter->getAutoindex() && !isFile)
@@ -252,22 +259,30 @@ bool Response::GET()
 					_code = "404";
 					return (false);
 				}
-				_body = autoindex.getPage();
-				_code = "200";
+				if ((_body = autoindex.getPage()).length() > _maxLen)
+				{
+					_code = "413";
+					return (false);
+				}
+				_code.length() > 0 ? "red" : _code = "200";
 				return (true);
 			}
 			else if (isFile && iter->getIndex().empty())
 			{
-				getPage(url);
+				if (!getPage(url))
+					return (false);
 				return (true);
 			}
 			else if (!iter->getIndex().empty())
 			{
 				if (*url.end() != '/')
 					url.append("/");
-				getPage(url + iter->getIndex());
+				if (!getPage(url + iter->getIndex()))
+					return (false);
 				return (true);
 			}
+			else
+				break;
 		}
 	}
 	_code = "403";
@@ -275,6 +290,48 @@ bool Response::GET()
 }
 
 bool Response::DELETE()
+{
+	std::string url;
+	bool isFile = false;
+	const std::vector<Location> & loclist = _server.getLocList();
+	for (std::vector<Location>::const_iterator iter = loclist.begin(); iter != loclist.end(); ++iter)
+	{
+		if (checkLocation(iter, _request.getUrl(), url, isFile))
+		{
+			if (!iter->getPathToRedir().empty())
+			{
+				makeRedirect(loclist, iter, url);
+				_code = "301";
+			}
+			if (!iter->getMethods()[_request.getMethod()])
+			{
+				_code = "405";
+				return (false);
+			}
+			if (!isFile)
+				break;
+			else
+			{
+				if (unlink(url.data()) != 0)
+				{
+					if	(errno == ENOENT)
+					{
+						_code = "404";
+						return (false);
+					}
+					else
+						break;
+				}
+				_code = "200";
+				return (true);
+			}
+		}
+	}
+	_code = "403";
+	return false;
+}
+
+bool Response::POST(void)
 {
 	return false;
 }

@@ -4,11 +4,14 @@
 
 Request::Request ( void )
 {
-	_isFirstLineSet = 0;
-	_isHeadersEnd = 0;
-	_isBodyEnd = 0;
+	_isBodyEnd = false ;
+	_isChunked = false ;
+	_isRequestEnd = false ;
+	_isHeadersEnd = false ;
+	_isFirstLineSet = false ;
+	_readingBodySize = true ;
+	_readingBody = false ;
 	_bodySize = 0;
-	_isRequestEnd = 0;
 	_firstLineSize = 0;
 	_firstLineMaxSize = 2063;//2048 + 15
 }
@@ -66,8 +69,7 @@ void	Request::setQueryString(std::string& str, size_t &findQ){
 }
 void	Request::setBody(){
 
-	std::cout << "!!!!!!!!! before checkBodyHeders";
-	checkBodyHeders();
+	checkBodyHeder();
 	for ( std::string::iterator it=_buf.begin(); it!=_buf.end() && _bodySize; ++it)
 	{
 		_body += *it ;
@@ -76,12 +78,74 @@ void	Request::setBody(){
 	if (_bodySize == 0)
 		_isBodyEnd = 1 ;
 }
+void	Request::setChunkedBody(){
+	// std::cout << "in setChunkedBody " << std::endl;
+	// std::cout << "_readingBodySize "<<_readingBodySize << std::endl;
+	// std::cout << "buf " << _buf << std::endl;
+	std::string str;
+	// while (str != "0")
+	while (!_isBodyEnd)
+	{
+		if (_readingBodySize)
+		{		
+			// std::cout << _readingBodySize << std::endl;
+			for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
+				str += *it ;
+			// std::cout << "str " << str << std::endl;
+			_bodySize = static_cast<size_t>(stoll(str));//atoi(c_str(str))
+			// std::cout << "body size " << _bodySize << std::endl;
+			if (_bodySize == 0)
+			{
+				_isBodyEnd = true;
+				return ;
+			}
+			_readingBody = true;
+			_readingBodySize = false;
+			// std::cout << _readingBody << std::endl;
+			// std::cout << _readingBodySize << std::endl;
+		}
+		else if(_readingBody)
+		{
+			// std::cout << "in _readingBody == 1 " << std::endl;
+			if(_buf.size() >= _bodySize)
+			{
+				for ( std::string::iterator it=_buf.begin(); it!=_buf.end() && _bodySize; ++it)
+				{
+					str += *it ;
+					_body += *it ;
+					--_bodySize;
+				}
+				// std::cout << "buf " << _buf << std::endl;
+				// _buf.erase(0, str.size() + 2) ;
+				// std::cout << "buf " << _buf << std::endl;
+				// std::cout << "body " << _body << std::endl;
+				_readingBody = false;
+				_readingBodySize = true;
+			}
+			// std::cout << "body " << _body << std::endl;
+		}
+		// std::cout << "buf " << _buf << std::endl;
+		_buf.erase(0, str.size() + 2) ;
+		// std::cout << "buf " << _buf << std::endl;
+		// std::cout << "str " << str << std::endl;
+		str.clear();
+	}
+	
+
+
+	// _isBodyEnd = true;
+}
 void	Request::setBodySize(){
 	std::string сonLen("Content-Length");
 	if (!_headersMap[сonLen].empty())
 		_bodySize = static_cast<size_t>(stoll(_headersMap[сonLen]));//С++11
 }
-
+void	Request::setIsChunked(){
+	std::string transEncod("Transfer-Encoding");
+	if (!_headersMap[transEncod].empty())
+		if (_headersMap[transEncod] == "chunked")
+			_isChunked = true ;
+}
 void	Request::setFirstLine(size_t &endLine){
 	std::string	str;	
 	for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
@@ -94,7 +158,6 @@ void	Request::setFirstLine(size_t &endLine){
 			throw  std::exception();
 		}
 	}
-	std::cout<<"!!!!! str from setFirstLine"<<str<<std::endl;
 	std::vector<std::string> firstLine = split2(str, " ");
 	if (firstLine.size() != 3)
 	{
@@ -113,40 +176,29 @@ void	Request::setFirstLine(size_t &endLine){
 	setHttpVersion(firstLine[2]) ;
 	
 	_isFirstLineSet = true;
-	std::cout << "!!!!!!!!! _buf from 1 line "<< _buf << std::endl;
 	_buf.erase(0, endLine + 2) ;
 }
 void	Request::setHeadersMap(size_t & endLine, size_t & endHeaders){
 
-	std::string	str;
-
-	// std::cout << "!!!!!!!!! endLine "<< endLine << std::endl;
-	// std::cout << "!!!!!!!!! endHeaders "<< endHeaders << std::endl;
-	for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
-		str += *it ;
-	
-	std::cout<<"!!!!! str from setHeadersMap"<<str<<std::endl;
+	std::string	str = _buf.substr(0, endLine);
 	std::vector<std::string> headLines = split2(str, ": ");
 	if (headLines.size() == 2)
 		_headersMap[headLines[0]] = headLines[1];
 	else
+	{
+		_errCode = "400";
 		throw std::exception();
+	}
 
 	if (endHeaders == endLine )
 	{
 		_buf.erase(0, endLine + 4) ;
-		str.clear();
 		_isHeadersEnd = 1;
 	}
 	else
-	{
 		_buf.erase(0, endLine + 2) ;
-		str.clear();
-	}
-
-	std::cout << "!!!!!!!!! _isHeadersEnd "<< _isHeadersEnd << std::endl;
+	str.clear();
 }
-
 
 std::string	Request::getUri(){
 	return _uri;
@@ -196,17 +248,12 @@ std::vector<std::string> split2(const std::string& str, const std::string& delim
 }
 
 void	Request::parseReq(std::string & req){
-	// addBuf(req);
-	_buf += req;
+	
+	addBuf(req);
+
 	size_t endLine = _buf.find("\r\n") ;
 	size_t endHeaders = _buf.find("\r\n\r\n") ;
 	
-
-	// std::cout << "!!!!!!!!! is first line set "<< _isFirstLineSet << std::endl;
-	std::cout << "!!!!!!!!! is headers set "<< _isHeadersEnd << std::endl;
-	// std::cout << "!!!!!!!!! _buf "<< _buf << std::endl;
-	// std::cout << "!!!!!!!!! endLine "<< endLine << std::endl;
-	// std::cout << "!!!!!!!!! endHeaders "<< endHeaders << std::endl;
 	while(endLine != static_cast<size_t>(-1) && !_isBodyEnd)
 	{
 		if (!_isFirstLineSet)
@@ -215,28 +262,24 @@ void	Request::parseReq(std::string & req){
 		{	
 			setHeadersMap(endLine, endHeaders);
 			setBodySize();
+			setIsChunked();
 		}
-		// else if (_isHeadersEnd && (_method == "POST" || _method == "DELETE"))
-		else if (_isHeadersEnd)
+		else if (_isHeadersEnd && (_method == "POST" || _method == "DELETE"))
 		{
-	std::cout << "!!!!!!!!! before setBody" << std::endl;
-	
-			setBody();
+			if (!_isChunked)
+				setBody();
+			else
+				setChunkedBody();
 		}
+
 		if ((_method == "GET" && _isHeadersEnd) || ((_method == "POST" || _method == "DELETE") && _isBodyEnd))
 		{	
 			_isRequestEnd = true;
 			if (_method == "GET")
 				break;
-
-	std::cout << "!!!!!!!!! _isRequestEnd = 1" << std::endl;
-	}
+		}
 		endLine = _buf.find("\r\n") ;
 		endHeaders = _buf.find("\r\n\r\n") ;
-
-	std::cout << "!!!!!!!!! endLine "<< endLine << std::endl;
-	std::cout << "!!!!!!!!! endHeaders "<< endHeaders << std::endl;
-
 	}
 	// for (std::map<std::string, std::string>::iterator it = _headersMap.begin(); it != _headersMap.end(); ++it)
 	// std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;
@@ -257,11 +300,11 @@ void	Request::checkHttpVersion(std::string& httpVersion){
 		throw std::exception();
 	}
 }
-void	Request::checkBodyHeders(){
+void	Request::checkBodyHeder(){
 	std::string сonLen("Content-Length");
-	std::string transfEncod("Transfer-Encoding");
-	if (_headersMap[сonLen].empty() && _headersMap[transfEncod].empty()){
-		std::cout << "!!!!!!!!! no сonLen transfEncod";
+	if (_headersMap[сonLen].empty())
+	{
+		std::cout << "!!!!!!!!! no сonLen";
 		throw std::exception();
-		}
+	}
 }

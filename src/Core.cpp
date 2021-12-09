@@ -195,8 +195,8 @@ void Core::mainLoop() {
 #if DEBUG_MODE > 0
 				std::cout << GREENCOL"Client " << cli_it->getSetFd()->fd << " send"  << " revent is " <<
 					cli_it->getSetFd()->revents << RESCOL << std::endl;
-					std::cout << "Full req of client " << cli_it->getSetFd()->fd
-					<< " is: " << std::endl << cli_it->getReq() << std::endl;
+					// std::cout << "Full req of client " << cli_it->getSetFd()->fd
+					// << " is: " << std::endl << cli_it->getReq() << std::endl;
 #endif
 				Response response(cli_it->getRequest().getMethod(), *cli_it);
 				cli_it->setResponse(response);

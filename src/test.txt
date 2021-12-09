@@ -1,4 +1,4 @@
-POST /?F HTTP/1.1
+DELETE /?F HTTP/1.1
 Host: site.ru
 User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:18.0) Gecko/20100101 Firefox/18.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
@@ -19,4 +19,23 @@ while (head != msg_end && *head != '\r') {
 while (tail != msg_end && *tail != '\r') ++tail;
 const char *colon = memchr(head, tail, ':');
 
-	
+POST /?F HTTP/1.1
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+9
+chunk 1, 
+7
+chunk 2
+0
+
+POST /upload HTTP/1.1 
+User-Agent: Arduino 
+Accept: */*
+Transfer-Encoding: chunked
+
+25 
+this is the text, of this
+0
+

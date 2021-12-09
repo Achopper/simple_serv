@@ -6,12 +6,6 @@
 #include <map>
 #include <string>
 
-// #define PARSE_FIRST_LINE 1
-// #define PARSE_HEADERS 2
-// #define PARSE_BODY 3
-// #define PARSE_END 4
-
-
 class Request
 {
 
@@ -21,6 +15,9 @@ private:
 	bool									_isHeadersEnd;
 	bool									_isBodyEnd;
 	bool									_isRequestEnd;
+	bool									_isChunked;
+	bool									_readingBodySize;
+	bool									_readingBody;
 
 	std::string								_errCode;
 	std::string								_method;
@@ -48,8 +45,10 @@ public:
 	void									setUri(std::string & str);
 	void									setUrl(std::string & str, size_t &findQ);
 	void									setBody();
+	void									setChunkedBody();
 	void									setMethod(std::string &str);
 	void									setBodySize();
+	void									setIsChunked();
 	void									setHttpVersion(std::string &str);
 	void									setQueryString(std::string &str, size_t &findQ);
 	void									setHeadersMap(size_t &endLine, size_t &endHeaders);
@@ -70,7 +69,7 @@ public:
 	void									parseReq(std::string & req);
 	void									checkHttpVersion(std::string & httpVersion);
 	void									checkMethod(std::string & method);
-	void									checkBodyHeders();
+	void									checkBodyHeder();
 
 
 };

@@ -7,7 +7,8 @@ Client::Client (Server const & server, pollfd* set)
 	_setFd(set),
 	_body(""),
 	_req(""),
-	_connectTime (std::time(nullptr)),
+	// _connectTime (std::time(nullptr)),
+	_connectTime (time(nullptr)),
 	_finishReadReq(false)
 {
 	_request = Request();
@@ -57,7 +58,8 @@ void Client::setSetFd( pollfd  *setFd )
 
 void Client::setConnTime()
 {
-	_connectTime = std::time(nullptr);
+	// _connectTime = std::time(nullptr);
+	_connectTime = time(nullptr);
 }
 
 void Client::setResponse(Response &response)

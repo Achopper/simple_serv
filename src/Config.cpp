@@ -3,7 +3,8 @@
 #include "../inc/Config.hpp"
 
 
-Config::Config(const std::string &conf)
+Config::Config(const std::string &conf) :
+_servCount(0)
 {
 	readConfig(conf);
 	parseConfig();
@@ -22,6 +23,7 @@ Config& Config::operator=(const Config &obj)
 		_err = obj._err;
 		_servers = obj._servers;
 		_servCount = obj._servCount;
+		_ipAndPorts = obj._ipAndPorts;
 	}
 	return (*this);
 }
@@ -123,15 +125,14 @@ void Config::parseConfig()
 			if (!parseServerBlock(splittedConf, ++word))
 				return;
 		}
-		//else if()
 		else
 		{
 			_err.append("Unknown config parametr: " + *word);
 			return ;
 		}
-//		*++word;
 	}
-
+	for (std::vector<Server>::const_iterator it = _servers.cbegin(); it != _servers.cend(); ++it)
+		std::cout << "http://"  << it->getServIp() << ":" << it->getPort() << std::endl;
 }
 
 bool Config::checkSemicolon(std::vector<std::string>::iterator &word)
@@ -165,6 +166,14 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 			if (pos == std::string::npos || !checkSemicolon(word) ||
 				!(server.setAddr(std::string(std::begin(*word), word->end() - 1), pos)))
 				_err.append(REDCOL"Wrong host adress: " + *word + "\n" RESCOL);
+			else
+			{
+				std::pair<std::string, std::string>  ipP(server.getServIp(), server.getPort());
+				if (_ipAndPorts[ipP.first] != server.getPort())
+					_ipAndPorts[ipP.first] = ipP.second;
+				else
+					_err.append(REDCOL"Server ports must be unique\n" RESCOL);
+			}
 		}
 		else if (*word == "location")
 			parseLocationBlock(conf, ++word, server);
@@ -207,7 +216,6 @@ bool Config::parseServerBlock(std::vector<std::string> &conf, std::vector<std::s
 		return (false);
 	}
 	setServer(server);
-	std::cout << "http://"  << server.getServIp() << ":" << server.getPort() << std::endl;
 	_servCount++;
 	return (true);
 }
@@ -235,6 +243,11 @@ bool Config::parseLocationBlock(std::vector<std::string> &conf, std::vector<std:
 		{
 			if (!checkSemicolon(++word) || !location.setIndex((word)->substr(0, word->length() - 1)))
 				_err.append( REDCOL"Wrong index directive\n" RESCOL);
+		}
+		else if (*word == "cgi")
+		{
+			if (!checkSemicolon(++word) || !location.setCgi(server.getRoot() + (word)->substr(0, word->length() - 1)))
+				_err.append(REDCOL"Wrong cgi extension directive\n" RESCOL);
 		}
 		else if (*word == "client_max_body_size")
 		{

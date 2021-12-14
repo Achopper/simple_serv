@@ -16,6 +16,7 @@ private:
 	std::string									_root;
 	bool 										_autoindex;
 	bool 										_redirect;
+	std::string 								_cgi;
 	std::string 								_pathToRedirect;
 
 public:
@@ -36,6 +37,7 @@ public:
 	bool 		setRoot							( std::string const & root );
 	bool 		setRedirect						( std::string const & path );
 	bool		setPath							( std::string const & serverRoot, std::string & err );
+	bool 		setCgi							( std::string const & cgiExtension );
 
 	const std::string & getName					( void ) const;
 	bool 		getAutoindex					( void ) const;
@@ -45,6 +47,7 @@ public:
 	std::map<std::string, bool>	getMethods		( void ) const;
 	size_t 		getClientSize					( void ) const;
 	const std::string & getPathToRedir			( void ) const;
+	const std::string & getCgi					( void ) const;
 	bool isRedirect								( void ) const;
 
 };

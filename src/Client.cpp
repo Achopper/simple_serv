@@ -136,11 +136,11 @@ void Client::makeResponse()
 		return;
 	}
 	if (_request.getMethod() == "GET")
-		_response.GET();
+		_response.GET(_setFd->fd);
 	else if (_request.getMethod() == "DELETE")
 		_response.DELETE();
 	else if (_request.getMethod() == "POST")
-		_response.POST();
+		_response.POST(_setFd->fd);
 	else
 		_response.setCode("405");
 	_response.fillResponse();

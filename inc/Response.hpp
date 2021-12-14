@@ -10,7 +10,6 @@
 #include "Autoindex.hpp"
 
 class Server;
-class Client;
 
 class Response
 {
@@ -57,10 +56,11 @@ public:
 	void 		addContentLen							( std::string::size_type const &len );
 	void 		addContentType							( std::string const & filePath );
 	void 		addServerName							( std::string const & serverName );
+	bool 		callCgi									( const char **env, int sock);
 
-	bool 		GET										( void );
+	bool 		GET										( const int & sock );
 	bool		DELETE									( void );
-	bool 		POST									( void );
+	bool 		POST									( const int & sock );
 	bool 		getPage									( std::string const & path );
 	void 		fillResponse							( void );
 	bool		checkLocation							(  std::vector<Location>::const_iterator &lit,

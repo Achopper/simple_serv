@@ -17,7 +17,6 @@ std::map<std::string, std::string> Response::setStatusCode()
 	res.insert(std::pair<std::string, std::string>("505", "HTTP Version Not Supported"));
 
 
-
 	return (res);
 }
 
@@ -40,7 +39,6 @@ Response::Response(Server &server,Request & request ) :  _server(server), _reque
 
 Response::Response()
 {
-
 }
 
 
@@ -231,7 +229,7 @@ bool Response::checkLocation(std::vector<Location>::const_iterator &iter, std::s
 	return (false);
 }
 
-bool Response::GET()
+bool Response::GET(const int & socket)
 {
 	DefaultPage page;
 	std::string url;
@@ -251,6 +249,11 @@ bool Response::GET()
 			}
 			if (!iter->getAutoindex() && iter->getIndex().empty() && url.empty())
 				_body = page.makePage("200", "Welcome to", _server.getServName());
+			else if (!iter->getCgi().empty())
+			{
+				(void)socket;
+				//TODO	callCgi(env, socket);
+			}
 			else if (iter->getIndex().length() == 0 && iter->getAutoindex() && !isFile)
 			{
 				Autoindex autoindex;
@@ -331,8 +334,39 @@ bool Response::DELETE()
 	return false;
 }
 
-bool Response::POST(void)
+bool Response::POST(const int & socket)
 {
+	std::string url;
+	bool isFile = false;
+	const std::vector<Location> & loclist = _server.getLocList();
+	for (std::vector<Location>::const_iterator iter = loclist.begin(); iter != loclist.end(); ++iter)
+	{
+		if (checkLocation(iter, _request.getUrl(), url, isFile))
+		{
+			if (!iter->getMethods()[_request.getMethod()])
+			{
+				_code = "405";
+				return (false);
+			}
+			if (!iter->getPathToRedir().empty())
+			{
+				makeRedirect(loclist, iter, url);
+				_code = "301";
+			}
+			if (isFile)
+			{
+				//TODO make file
+			}
+			if (!iter->getCgi().empty())
+			{
+				(void)socket;
+			//TODO	callCgi(env, socket);
+			}
+			iter->getPathToRedir().empty() ? _code = "200" : "red";
+			return true;
+		}
+	}
+	_code = "403";
 	return false;
 }
 

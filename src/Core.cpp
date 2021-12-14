@@ -58,7 +58,6 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 	ssize_t valread;
 	char buf[BUFSIZ] = {0};
 
-
 	valread = recv(it->getSetFd()->fd, buf, DEF_CLI_MAX_BDY_SZ, 0);
 	it->setConnTime();
 	if (valread < 0)
@@ -90,6 +89,7 @@ bool Core::sendResponce(std::list<Client>::iterator &it, nfds_t& num)
 {
 	ssize_t s;
 	it->makeResponse();
+	//TODO add content-len
 	s = send(it->getSetFd()->fd, it->getResponse()->getResp().c_str(), it->getResponse()->getResp().length(), 0);
 	if (s < 0)
 	{
@@ -124,7 +124,6 @@ bool Core::initSocets()
 		_sockfd.push_back(sock);
 		setsockopt(_sockfd.at(i), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
 		fcntl(_sockfd.at(i), F_SETFL , O_NONBLOCK);
-
 		if (bind(_sockfd.at(i), (struct sockaddr *) &addr, sizeof(addr)) < 0)
 		{
 			std::cout << REDCOL"Can't bind socket: " << strerror(errno) << RESCOL << std::endl;
@@ -153,16 +152,6 @@ void Core::mainLoop() {
 		{
 			std::cout << REDCOL"Can't poll" << strerror(errno) << RESCOL << std::endl;
 			throw CoreException();
-		}
-		if (pollRet == 0)
-		{
-			std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0] << RESCOL << std::endl;
-			_sockfd.erase(_sockfd.begin());
-			close(_fdset[0].fd);
-			_fdset[0].fd = -1;
-			if (_sockfd.empty())
-				return;
-			continue;
 		}
 		for(std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
 		{

@@ -10,6 +10,7 @@ _redirect(false)
 	_methods["GET"] = true;
 	_methods["POST"] = false;
 	_methods["DELETE"] = false;
+	_methods["HEAD"] = true;
 }
 
 Location::Location(const Location &obj)
@@ -64,13 +65,7 @@ bool Location::setPath(std::string const & serverRoot, std::string &err)
 		_path = serverRoot + _alias;
 		return (true);
 	}
-//	if (path[0] != '/' || path[path.length() - 1] != '/')
-//	{
-//		std::cout << REDCOL"Location block must start and end with '/'" << RESCOL << std::endl;
-//		return (false);
-//	}
-//	path.length() > 1 ? _path = path.substr(0, path.length() - 1) : _path = path;
-//	return (true);
+	return (false);
 }
 
 bool Location::setAutoindex(std::string const & autoindex)
@@ -209,6 +204,17 @@ bool Location::setAlias(const std::string &alias)
 	}
 	_alias = alias;
 	return (true);
+}
+
+bool Location::setCgi(const std::string &cgiExtension)
+{
+	_cgi = cgiExtension;
+	return true;
+}
+
+const std::string &Location::getCgi() const
+{
+	return (_cgi);
 }
 
 

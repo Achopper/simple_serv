@@ -29,7 +29,8 @@ bool Autoindex::makePage(const std::string &path, const std::string & locPath)
 	{
 		std::string::size_type pos;
 		if ((pos = path.rfind('/')) != 1)
-			_locPath = path.substr(strchr((path.data() + 2), '/') - &path[0], path.length());
+			_locPath = path.substr(reinterpret_cast<std::string::size_type>(strchr((path.data() + 2), '/')) -
+										reinterpret_cast<std::string::size_type>(&path[0]),path.length());
 		if (_locPath.length() > 1 && _locPath[_locPath.length() - 1] != '/')
 			_locPath += '/';
 		getNames(dir);

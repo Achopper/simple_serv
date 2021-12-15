@@ -7,6 +7,8 @@
 #include "Config.hpp"
 #include "Client.hpp"
 #include "Response.hpp"
+#include "Env.hpp"
+#include "Server.hpp"
 
 class Core
 {

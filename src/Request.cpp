@@ -1,5 +1,6 @@
 
-#include "../inc/Request.hpp"
+// #include "../inc/Request.hpp"
+#include "../inc/Core.hpp"
 #include "../inc/serv_includes.hpp"
 
 Request::Request ( void )
@@ -79,21 +80,14 @@ void	Request::setBody(){
 		_isBodyEnd = 1 ;
 }
 void	Request::setChunkedBody(){
-	// std::cout << "in setChunkedBody " << std::endl;
-	// std::cout << "_readingBodySize "<<_readingBodySize << std::endl;
-	// std::cout << "buf " << _buf << std::endl;
 	std::string str;
-	// while (str != "0")
 	while (!_isBodyEnd)
 	{
 		if (_readingBodySize)
-		{		
-			// std::cout << _readingBodySize << std::endl;
+		{
 			for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
 				str += *it ;
-			// std::cout << "str " << str << std::endl;
 			_bodySize = static_cast<size_t>(stoll(str));//atoi(c_str(str))
-			// std::cout << "body size " << _bodySize << std::endl;
 			if (_bodySize == 0)
 			{
 				_isBodyEnd = true;
@@ -101,12 +95,9 @@ void	Request::setChunkedBody(){
 			}
 			_readingBody = true;
 			_readingBodySize = false;
-			// std::cout << _readingBody << std::endl;
-			// std::cout << _readingBodySize << std::endl;
 		}
 		else if(_readingBody)
 		{
-			// std::cout << "in _readingBody == 1 " << std::endl;
 			if(_buf.size() >= _bodySize)
 			{
 				for ( std::string::iterator it=_buf.begin(); it!=_buf.end() && _bodySize; ++it)
@@ -115,25 +106,13 @@ void	Request::setChunkedBody(){
 					_body += *it ;
 					--_bodySize;
 				}
-				// std::cout << "buf " << _buf << std::endl;
-				// _buf.erase(0, str.size() + 2) ;
-				// std::cout << "buf " << _buf << std::endl;
-				// std::cout << "body " << _body << std::endl;
 				_readingBody = false;
 				_readingBodySize = true;
 			}
-			// std::cout << "body " << _body << std::endl;
 		}
-		// std::cout << "buf " << _buf << std::endl;
 		_buf.erase(0, str.size() + 2) ;
-		// std::cout << "buf " << _buf << std::endl;
-		// std::cout << "str " << str << std::endl;
 		str.clear();
 	}
-	
-
-
-	// _isBodyEnd = true;
 }
 void	Request::setBodySize(){
 	std::string сonLen("Content-Length");

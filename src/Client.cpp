@@ -1,6 +1,7 @@
 
-#include "../inc/Client.hpp"
-#include "../inc/Response.hpp"
+// #include "../inc/Client.hpp"
+// #include "../inc/Response.hpp"
+#include "../inc/Core.hpp"
 
 Client::Client (Server const & server, pollfd* set)
 : 	_server(server),
@@ -161,3 +162,5 @@ void	Client::setRequest(std::string  req)
 	}
 	
 }
+
+Env&	Client::getEnv(){return _env;}

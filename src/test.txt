@@ -6,7 +6,6 @@ Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3
 Accept-Encoding: gzip, deflate
 Cookie: wp-settings
 Connection: keep-alive
-Connectiondsgdgae: keep-alivesgfdgaa
 Content-Length: 278
 
 Find request type

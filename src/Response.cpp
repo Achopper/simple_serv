@@ -1,5 +1,6 @@
 
-#include "../inc/Response.hpp"
+#include "../inc/Core.hpp"
+// #include "../inc/Response.hpp"
 
 std::map<std::string, std::string> Response::setStatusCode()
 {

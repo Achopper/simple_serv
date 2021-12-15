@@ -176,6 +176,16 @@ void Core::mainLoop() {
 					std::cout << "_body " << cli_it->getRequest().getBody() << std::endl;
 					std::cout << "_queryString " << cli_it->getRequest().getQueryString() << std::endl;
 					std::cout << std::endl;
+					try
+					{
+						cli_it->getEnv().addHttpEnvToMap(cli_it->getRequest());
+					}
+					catch(const std::exception& e)
+					{
+						std::cout << "ENV ERR!!!!!!!!!\n";
+						// std::cerr << e.what() << '\n';
+					}
+					
 
 				}
 				if (!cli_it->getRequest().getIsRequestEnd())

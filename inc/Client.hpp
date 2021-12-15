@@ -6,6 +6,7 @@
 #include "serv_includes.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
+#include "Env.hpp"
 #include <map>
 
 #define PARSE_FIRST_LINE 1
@@ -32,6 +33,7 @@ private:
 	bool 								_finishReadReq;
 	Response							*_response;
 	Request								_request;
+	Env									_env;
 
 
 public:
@@ -74,6 +76,10 @@ public:
 	
 	void					setRequest(std::string  req);
 	Request&				getRequest( void );
+
+public:
+	
+	Env&					getEnv();
 
 };
 

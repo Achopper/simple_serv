@@ -3,9 +3,9 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#include "serv_includes.hpp"
-#include "Server.hpp"
-#include "Client.hpp"
+// #include "serv_includes.hpp"
+// #include "Server.hpp"
+// #include "Client.hpp"
 #include "DefaultPage.hpp"
 
 class Client;
@@ -63,5 +63,6 @@ public:
 
 };
 
+#include "Core.hpp"
 
 #endif //RESPONSE_HPP

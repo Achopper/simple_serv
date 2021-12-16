@@ -6,6 +6,7 @@ std::map<std::string, std::string> Response::setStatusCode()
 	std::map<std::string, std::string> res;
 	res.insert(std::pair<std::string, std::string>("100", "Continue"));
 	res.insert(std::pair<std::string, std::string>("200", "OK"));
+	res.insert(std::pair<std::string, std::string>("201", "Created"));
 	res.insert(std::pair<std::string, std::string>("301", "Moved Permanently"));
 
 	res.insert(std::pair<std::string, std::string>("403", "Forbidden"));
@@ -15,6 +16,8 @@ std::map<std::string, std::string> Response::setStatusCode()
 	res.insert(std::pair<std::string, std::string>("413", "Payload Too Large"));
 
 	res.insert(std::pair<std::string, std::string>("505", "HTTP Version Not Supported"));
+
+
 
 
 	return (res);
@@ -353,14 +356,24 @@ bool Response::POST(const int & socket)
 				makeRedirect(loclist, iter, url);
 				_code = "301";
 			}
-			if (isFile)
-			{
-				//TODO make file
-			}
 			if (!iter->getCgi().empty())
 			{
 				(void)socket;
-			//TODO	callCgi(env, socket);
+				//TODO	callCgi(env, socket);
+			}
+			else if (isFile)
+			{
+				//TODO make file
+			}
+			else if (iter->getName() == "/download" && /* !body.empty() */ !_request.getBuf().empty())
+			{
+				if (_server.downloadFile(_request.getBuf().substr(_request.getBuf().find('=') + 1), url))
+				{
+					_code = "201";
+					return (true);
+				}
+				else
+					break;
 			}
 			iter->getPathToRedir().empty() ? _code = "200" : "red";
 			return true;

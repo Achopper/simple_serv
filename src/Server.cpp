@@ -149,5 +149,22 @@ const std::map<std::string, std::string>& Server::getErrPage() const
 	return (_errorPages);
 }
 
+bool Server::downloadFile(std::string const &path, std::string const & dst)
+{
+	std::string _pt(path);
+	std::string toTrim("%2F");
+	for (std::size_t found = _pt.find(toTrim); found != std::string::npos; found = _pt.find(toTrim) )
+		_pt.replace(found, 3, "/");
+	std::ifstream src;
+	std::ofstream dest;
+	src.open(_pt,std::ios_base::binary);
+	dest.open(dst + "/" + std::string(_pt.substr(_pt.rfind('/'))), std::ios_base::binary);
+	if (!src.is_open() || !dest.is_open())
+		return (false);
+	else
+		dest << src.rdbuf();
+	return true;
+}
+
 
 

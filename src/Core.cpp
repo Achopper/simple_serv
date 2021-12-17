@@ -61,6 +61,7 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 	char buf[BUFSIZ] = {0};
 
 	valread = recv(it->getSetFd()->fd, buf, DEF_CLI_MAX_BDY_SZ, 0);
+	std::cout << REDCOL << valread << RESCOL <<std::endl;
 	it->setConnTime();
 	if (valread < 0)
 	{
@@ -77,7 +78,7 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 	}
 	else if (valread > 0)
 	{
-		it->setReq(it->getReq().append(buf, static_cast<size_t>(valread)));
+		it->setReq(buf);
 #if DEBUG_MODE > 0
 		std::cout <<GREENCOL "client " << it->getSetFd()->fd << " reсive " << valread << " bytes and revent: " <<
 		it->getSetFd()->revents << RESCOL << std::endl;
@@ -169,9 +170,14 @@ void Core::mainLoop() {
 					readRequest(cli_it, numfds);
 					cli_it->setRequest(cli_it->getReq());
 				}
-				std::string::size_type pos = cli_it->getReq().find("\r\n\r\n");
-				if (pos == std::string::npos)
+				if (!cli_it->getRequest().getIsRequestEnd())
+				{
 					continue;
+
+				}
+				// std::string::size_type pos = cli_it->getReq().find("\r\n\r\n");
+				// if (pos == std::string::npos)
+				// 	continue;
 				else
 				{
 					cli_it->getSetFd()->revents &= ~(POLLRDNORM | POLLERR);
@@ -179,14 +185,25 @@ void Core::mainLoop() {
 					cli_it->getResponse()->setRequest(cli_it->getRequest());
 					//cli_it->getSetFd()->events |= POLLOUT;
 				}
+
+					try
+					{
+						cli_it->getEnv().addHttpEnvToMap(cli_it->getRequest());
+						cli_it->getEnv().setEnvArr();
+					}
+					catch(const std::exception& e)
+					{
+						std::cout << "ENV ERR!!!!!!!!!\n";
+						// std::cerr << e.what() << '\n';
+					}
 			}
 			if (cli_it->getFinishReadReq())
 			{
 #if DEBUG_MODE > 0
 				std::cout << GREENCOL"Client " << cli_it->getSetFd()->fd << " send"  << " revent is " <<
 					cli_it->getSetFd()->revents << RESCOL << std::endl;
-					std::cout << "Full req of client " << cli_it->getSetFd()->fd
-					<< " is: " << std::endl << cli_it->getReq() << std::endl;
+					// std::cout << "Full req of client " << cli_it->getSetFd()->fd
+					// << " is: " << std::endl << cli_it->getReq() << std::endl;
 #endif
 
 				sendResponce(cli_it, numfds);

@@ -1,6 +1,7 @@
 
-#include "../inc/Client.hpp"
-#include "../inc/Response.hpp"
+// #include "../inc/Client.hpp"
+// #include "../inc/Response.hpp"
+#include "../inc/Core.hpp"
 
 Client::Client (Server const & server, pollfd* set)
 : 	_server(server),
@@ -156,5 +157,17 @@ void Client::makeResponse()
 
 void	Client::setRequest(std::string const &req)
 {
-	_request.parseReq(req);
+	try
+	{
+		_request.parseReq(req);
+	}
+	catch(const std::exception& e)
+	{
+		std::cout << "ИСКЛЮЧЕНИЕ ПАРСИНГ!!!!!!!!!!!!" << std::endl;
+		std::cout << "КОД!!!!!!!!!!!!  "  << _request.getErrCode() << std::endl;
+		// std::cerr << e.what() << '\n';
+	}
+	
 }
+
+Env&	Client::getEnv(){return _env;}

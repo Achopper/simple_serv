@@ -17,6 +17,7 @@ SOURCES_LIST = 	main.cpp\
 				Response.cpp\
 				DefaultPage.cpp\
 				Request.cpp\
+				Env.cpp
 				Autoindex.cpp
 
 HEADERS_LIST = 	Core.hpp\
@@ -27,6 +28,7 @@ HEADERS_LIST = 	Core.hpp\
 				serv_includes.hpp\
 				DefaultPage.hpp\
 				Request.hpp\
+				Env.hpp
 				Autoindex.hpp
 
 SOURCES = $(addprefix $(SOURCES_DIR), $(SOURCES_LIST))

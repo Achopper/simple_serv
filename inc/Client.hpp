@@ -6,6 +6,8 @@
 #include "serv_includes.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
+
+#include "Env.hpp"
 #include "Response.hpp"
 #include <map>
 
@@ -32,6 +34,7 @@ private:
 	bool 								_finishReadReq;
 	Response							_response;
 	Request								_request;
+	Env									_env;
 
 public:
 
@@ -69,6 +72,10 @@ public:
 	
 	void					setRequest	( std::string const & req );
 	Request&				getRequest	( void );
+
+public:
+	
+	Env&					getEnv();
 
 };
 

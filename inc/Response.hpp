@@ -69,5 +69,6 @@ public:
 														  std::vector<Location>::const_iterator & it, std::string &url);
 };
 
+#include "Core.hpp"
 
 #endif //RESPONSE_HPP

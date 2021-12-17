@@ -41,7 +41,7 @@ public:
 	~Request								( void );
 	Request&								operator=( Request const& obj );
 
-	void									addBuf(std::string & req);
+	void									addBuf(std::string const & req);
 
 	void									setUri(std::string & str);
 	void									setUrl(std::string & str, size_t &findQ);

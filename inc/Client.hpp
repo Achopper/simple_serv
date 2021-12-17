@@ -27,7 +27,8 @@ private:
 	pollfd								*_setFd;
 	std::string							_body; //TODO ?
 	std::string 						_req;
-	std::time_t 						_connectTime;
+	// std::time_t 						_connectTime;
+	time_t 								_connectTime;
 	bool 								_finishReadReq;
 	Response							_response;
 	Request								_request;
@@ -54,7 +55,8 @@ public:
 	std::string getBody					( void ) const;
 	std::string getReq					( void ) const;
 	pollfd* getSetFd					( void ) const;
-	std::time_t getConTime				( void ) const;
+	// std::time_t getConTime				( void ) const;
+	time_t getConTime					( void ) const;
 	bool	getFinishReadReq 			( void ) const;
 	const Server & getServer			( void ) const;
 	Response * getResponse				( void );

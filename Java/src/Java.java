@@ -132,12 +132,15 @@ public class Java {
             }
         }
 
-        assert method != null;
-        if (method.equals("GET")) {
+
+       assert method != null;
+
+       if (method.equals("GET")) {
             System.out.println(formCreator());
             System.exit(0);
         }
-
+        else if (method.equals("POST"))
+        {
         if (env.containsKey("AQUARIUS"))
             responseToBrowser("aquarius");
         else if (env.containsKey("PISCES"))
@@ -162,5 +165,6 @@ public class Java {
             responseToBrowser("sagittarius");
         else if (env.containsKey("CAPRICORN"))
             responseToBrowser("capricorn");
+            }
     }
 }

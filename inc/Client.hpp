@@ -11,15 +11,6 @@
 #include "Response.hpp"
 #include <map>
 
-#define PARSE_FIRST_LINE 1
-#define PARSE_HEADERS 2
-#define PARSE_BODY 3
-#define PARSE_END 4
-
-
-
-
-
 class Client
 {
 
@@ -29,8 +20,7 @@ private:
 	pollfd								*_setFd;
 	std::string							_body; //TODO ?
 	std::string 						_req;
-	// std::time_t 						_connectTime;
-	time_t 								_connectTime;
+	std::time_t 						_connectTime;
 	bool 								_finishReadReq;
 	Response							_response;
 	Request								_request;

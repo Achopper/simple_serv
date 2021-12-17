@@ -43,7 +43,7 @@ Request &Request::operator=(const Request &obj)
 	return (*this);
 }
 
-void	Request::addBuf(std::string& req){
+void	Request::addBuf(std::string const  & req){
 
 	_buf += req;
 }
@@ -77,7 +77,7 @@ void	Request::setBody(){
 		--_bodySize;
 	}
 	if (_bodySize == 0)
-		_isBodyEnd = 1 ;
+		_isBodyEnd = true ;
 }
 void	Request::setChunkedBody(){
 	std::string str;
@@ -172,7 +172,7 @@ void	Request::setHeadersMap(size_t & endLine, size_t & endHeaders){
 	if (endHeaders == endLine )
 	{
 		_buf.erase(0, endLine + 4) ;
-		_isHeadersEnd = 1;
+		_isHeadersEnd = true;
 	}
 	else
 		_buf.erase(0, endLine + 2) ;
@@ -240,11 +240,11 @@ void	Request::parseReq(std::string const & req){
 		else if (_isFirstLineSet && !_isHeadersEnd)
 		{	
 			setHeadersMap(endLine, endHeaders);
-			setBodySize();
+ 			setBodySize();
 			setIsChunked();
 
 		}
-		else if (_isHeadersEnd && (_method == "POST" || _method == "DELETE"))
+		if (_isHeadersEnd && (_method == "POST" || _method == "DELETE"))
 		{
 			if (!_isChunked)
 				setBody();

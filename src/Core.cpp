@@ -173,20 +173,15 @@ void Core::mainLoop() {
 				if (!cli_it->getRequest().getIsRequestEnd())
 				{
 					continue;
-
 				}
-				// std::string::size_type pos = cli_it->getReq().find("\r\n\r\n");
-				// if (pos == std::string::npos)
-				// 	continue;
 				else
 				{
 					cli_it->getSetFd()->revents &= ~(POLLRDNORM | POLLERR);
 					cli_it->setFinishReadReq(true);
 					cli_it->getResponse()->setRequest(cli_it->getRequest());
-					//cli_it->getSetFd()->events |= POLLOUT;
 				}
 
-					try
+					try //TODO mb del
 					{
 						cli_it->getEnv().addHttpEnvToMap(cli_it->getRequest());
 						cli_it->getEnv().setEnvArr();
@@ -202,13 +197,11 @@ void Core::mainLoop() {
 #if DEBUG_MODE > 0
 				std::cout << GREENCOL"Client " << cli_it->getSetFd()->fd << " send"  << " revent is " <<
 					cli_it->getSetFd()->revents << RESCOL << std::endl;
-					// std::cout << "Full req of client " << cli_it->getSetFd()->fd
-					// << " is: " << std::endl << cli_it->getReq() << std::endl;
+					 std::cout << "Full req of client " << cli_it->getSetFd()->fd
+					<< " is: " << std::endl << cli_it->getReq() << std::endl;
 #endif
-
 				sendResponce(cli_it, numfds);
 			}
-			// if (!_clientList.empty() && std::difftime(std::time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
 			if (!_clientList.empty() && difftime(time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
 			{
 #if DEBUG_MODE > 0

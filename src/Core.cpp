@@ -1,12 +1,12 @@
 
 #include "../inc/Core.hpp"
-
-
+#include <cstring>
 
 Core::Core(Config & config)
 {
 	memset (&_fdset, 0, sizeof(_fdset));
-	for (int i = 0; i < OPEN_MAX; ++i)
+	// for (int i = 0; i < OPEN_MAX; ++i)
+	for (int i = 0; i < FOPEN_MAX; ++i)
 		_fdset[i].fd = -1;
 	_servSize = config.getServCount();
 	_servers = config.getServers();
@@ -35,8 +35,10 @@ bool Core::acceptClientConnect(std::vector<Server>::iterator& iterator, nfds_t& 
 	}
 	iterator->getServerFd()->revents &= ~POLLRDNORM;
 	fcntl(newSock, F_SETFL , O_NONBLOCK);
-	for (int j = static_cast<int>(num); j < OPEN_MAX + 1; ++j) {
-		if (j == OPEN_MAX) {
+	// for (int j = static_cast<int>(num); j < OPEN_MAX + 1; ++j) {
+	for (int j = static_cast<int>(num); j < FOPEN_MAX + 1; ++j) {
+		// if (j == OPEN_MAX) {
+		if (j == FOPEN_MAX) {
 			std::cerr << "Can't serve more clients. Try again later.." << std::endl;
 			break; //TODO exit?
 		}
@@ -44,6 +46,7 @@ bool Core::acceptClientConnect(std::vector<Server>::iterator& iterator, nfds_t& 
 			_fdset[j].fd = newSock;
 			_fdset[j].events = (POLLRDNORM | POLLOUT);
 			Client client(*iterator, &_fdset[j]);
+			client.getResponse()->setServer(*iterator);
 			_clientList.push_back(client);
 			num++;
 			break;
@@ -56,7 +59,6 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 {
 	ssize_t valread;
 	char buf[BUFSIZ] = {0};
-
 
 	valread = recv(it->getSetFd()->fd, buf, DEF_CLI_MAX_BDY_SZ, 0);
 	std::cout << REDCOL << valread << RESCOL <<std::endl;
@@ -89,7 +91,14 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 bool Core::sendResponce(std::list<Client>::iterator &it, nfds_t& num)
 {
 	ssize_t s;
+	it->makeResponse();
+	//TODO add content-len
 	s = send(it->getSetFd()->fd, it->getResponse()->getResp().c_str(), it->getResponse()->getResp().length(), 0);
+	if (s < 0)
+	{
+		std::cout << REDCOL"Error in send: " << strerror(errno) << RESCOL << std::endl;
+		throw CoreException();
+	}
 #if DEBUG_MODE > 0
 	std::cout << GREENCOL << "client " << it->getSetFd()->fd << " send  " << s << RESCOL << std::endl;
 #endif
@@ -118,7 +127,6 @@ bool Core::initSocets()
 		_sockfd.push_back(sock);
 		setsockopt(_sockfd.at(i), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
 		fcntl(_sockfd.at(i), F_SETFL , O_NONBLOCK);
-
 		if (bind(_sockfd.at(i), (struct sockaddr *) &addr, sizeof(addr)) < 0)
 		{
 			std::cout << REDCOL"Can't bind socket: " << strerror(errno) << RESCOL << std::endl;
@@ -136,6 +144,8 @@ bool Core::initSocets()
 	return (true);
 }
 
+
+
 void Core::mainLoop() {
     nfds_t numfds = _servSize;
 	int pollRet;
@@ -143,18 +153,8 @@ void Core::mainLoop() {
 	while (true) {
 		if ((pollRet = poll(_fdset, numfds + 1, TIMEOUT)) < 0)
 		{
-			std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
+			std::cout << REDCOL"Can't poll" << strerror(errno) << RESCOL << std::endl;
 			throw CoreException();
-		}
-		if (pollRet == 0)
-		{
-			std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0] << RESCOL << std::endl;
-			_sockfd.erase(_sockfd.begin());
-			close(_fdset[0].fd);
-			_fdset[0].fd = -1;
-			if (_sockfd.empty())
-				return;
-			continue;
 		}
 		for(std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
 		{
@@ -169,15 +169,6 @@ void Core::mainLoop() {
 				{
 					readRequest(cli_it, numfds);
 					cli_it->setRequest(cli_it->getReq());
-					std::cout << "_method " << cli_it->getRequest().getMethod() << std::endl;
-					std::cout << "_uri " << cli_it->getRequest().getUri() << std::endl;
-					std::cout << "_url " << cli_it->getRequest().getUrl() << std::endl;
-					std::cout << "_httpVersion " << cli_it->getRequest().getHttpVersion() << std::endl;
-					std::cout << "_body " << cli_it->getRequest().getBody() << std::endl;
-					std::cout << "_queryString " << cli_it->getRequest().getQueryString() << std::endl;
-					std::cout << std::endl;
-					
-
 				}
 				if (!cli_it->getRequest().getIsRequestEnd())
 				{
@@ -191,6 +182,7 @@ void Core::mainLoop() {
 				{
 					cli_it->getSetFd()->revents &= ~(POLLRDNORM | POLLERR);
 					cli_it->setFinishReadReq(true);
+					cli_it->getResponse()->setRequest(cli_it->getRequest());
 					//cli_it->getSetFd()->events |= POLLOUT;
 				}
 
@@ -213,22 +205,18 @@ void Core::mainLoop() {
 					// std::cout << "Full req of client " << cli_it->getSetFd()->fd
 					// << " is: " << std::endl << cli_it->getReq() << std::endl;
 #endif
-				Response response(cli_it->getRequest().getMethod(), *cli_it);
-				cli_it->setResponse(response);
-				cli_it->makeResponse(response);
+
 				sendResponce(cli_it, numfds);
 			}
-			if (!_clientList.empty() && std::difftime(std::time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
+			// if (!_clientList.empty() && std::difftime(std::time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
+			if (!_clientList.empty() && difftime(time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
 			{
 #if DEBUG_MODE > 0
 				std::cout << REDCOL"Client " << cli_it->getSetFd()->fd  << " disconnected by timeout" << RESCOL <<
 						  std::endl;
 #endif
-				Response response(cli_it->getRequest().getMethod(), *cli_it);
-				response.setCode("408");
-				cli_it->setResponse(response);
-				cli_it->makeResponse(response);
-				// sendResponce(cli_it, numfds);
+				cli_it->getResponse()->setCode("408");
+				sendResponce(cli_it, numfds);
 			}
 		}
 	}

@@ -226,10 +226,10 @@ std::vector<std::string> split2(const std::string& str, const std::string& delim
     return tokens;
 }
 
-void	Request::parseReq(std::string & req){
+
+void	Request::parseReq(std::string const & req){
 	
 	addBuf(req);
-
 	size_t endLine = _buf.find("\r\n") ;
 	size_t endHeaders = _buf.find("\r\n\r\n") ;
 	
@@ -242,6 +242,7 @@ void	Request::parseReq(std::string & req){
 			setHeadersMap(endLine, endHeaders);
 			setBodySize();
 			setIsChunked();
+
 		}
 		else if (_isHeadersEnd && (_method == "POST" || _method == "DELETE"))
 		{

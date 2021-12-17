@@ -8,7 +8,8 @@ Client::Client (Server const & server, pollfd* set)
 	_setFd(set),
 	_body(""),
 	_req(""),
-	_connectTime (std::time(nullptr)),
+	// _connectTime (std::time(nullptr)),
+	_connectTime (time(nullptr)),
 	_finishReadReq(false)
 {
 	_request = Request();
@@ -37,9 +38,6 @@ Client &Client::operator=(const Client &obj)
 		_finishReadReq = obj._finishReadReq;
 		_response = obj._response;
 		_request = obj._request;
-//		path = obj.path; //TODO del
-//		method = obj.method; //TODO del
-//		prot = obj.prot; //TODO del
 	}
 	return (*this);
 }
@@ -61,12 +59,13 @@ void Client::setSetFd( pollfd  *setFd )
 
 void Client::setConnTime()
 {
-	_connectTime = std::time(nullptr);
+	// _connectTime = std::time(nullptr);
+	_connectTime = time(nullptr);
 }
 
 void Client::setResponse(Response &response)
 {
-	_response = &response;
+	_response = response;
 }
 
 std::string Client::getBody() const
@@ -95,7 +94,7 @@ void Client::setFinishReadReq(bool isFinish)
 	_finishReadReq = isFinish;
 }
 
-bool Client::getFinishReadReq(void) const
+bool Client::getFinishReadReq() const
 {
 	return (_finishReadReq);
 }
@@ -105,9 +104,14 @@ const Server &Client::getServer() const
 	return (_server);
 }
 
-const Response *Client::getResponse(void) const
+Response * Client::getResponse()
 {
-	return (_response);
+	return (&_response);
+}
+
+Request&	Client::getRequest()
+{
+	return (_request) ;
 }
 
 
@@ -119,36 +123,39 @@ void Client::deleteClient()
 	_setFd->revents = 0;
 }
 
-
-
-void Client::makeResponse(Response &response)
+void Client::makeResponse()
 {
-	if (_response->getCode() == "408")
+	if (_request.getHttpVersion() != PROT && _response.getCode() != "408")
 	{
-		response.fillResponse();
-		std::cout << _response->getResp() << std::endl;
+		_response.setCode("505");
+		_response.fillResponse();
+		std::cout << _response.getResp() << std::endl;;
 		return;
 	}
-	if (response.getMethod() == "GET")
-		response.GET(*this);
+	if (_response.getCode() == "408" || _response.getCode() == "405")
+	{
+		_response.fillResponse();
+		std::cout << _response.getResp() << std::endl;
+		return;
+	}
+	if (_request.getMethod() == "GET")
+		_response.GET(_setFd->fd);
+	else if (_request.getMethod() == "DELETE")
+		_response.DELETE();
+	else if (_request.getMethod() == "POST")
+		_response.POST(_setFd->fd);
 	else
-		_response->setCode("405");
-	//esle if ("POST")
-	response.fillResponse();
+		_response.setCode("405");
+	_response.fillResponse();
 #if DEBUG_MODE > 0
-	std::cout <<GREENCOL "Response of client " << _setFd->fd << ": " << RESCOL << std::endl << response.getResp()  <<
+	std::cout <<GREENCOL "Response of client " << _setFd->fd << ": " << RESCOL << std::endl << _response.getResp()  <<
 		std::endl;
 #endif
 
 }
 
 
-Request&	Client::getRequest( void )
-{
-	return (_request) ;
-}
-
-void	Client::setRequest(std::string  req)
+void	Client::setRequest(std::string const &req)
 {
 	try
 	{

@@ -1,7 +1,8 @@
 NAME = supaDupaServ
 
-FLAGS = -Wall -Werror -Wextra --std=c++98 -Wconversion -fsanitize=address -g
-CC	= clang++
+# FLAGS = -Wall -Werror -Wextra --std=c++98 -Wconversion -fsanitize=address -g
+# CC	= clang++
+CC	= g++
 RM	= rm -f
 
 SOURCES_DIR = src/
@@ -17,6 +18,7 @@ SOURCES_LIST = 	main.cpp\
 				DefaultPage.cpp\
 				Request.cpp\
 				Env.cpp
+				Autoindex.cpp
 
 HEADERS_LIST = 	Core.hpp\
 				Config.hpp\
@@ -27,6 +29,7 @@ HEADERS_LIST = 	Core.hpp\
 				DefaultPage.hpp\
 				Request.hpp\
 				Env.hpp
+				Autoindex.hpp
 
 SOURCES = $(addprefix $(SOURCES_DIR), $(SOURCES_LIST))
 HEADERS = $(addprefix $(HEADERS_DIR), $(HEADERS_LIST))

@@ -36,7 +36,8 @@ public:
 	void	setLocList									( std::vector<Location> const &locList) ;
 	void 	setLocList									( Location const & location );
 	bool 	setErrorPage								( std::string const & address,
-														  std::string const & code, std::string  & error);
+														   std::string const & code, std::string  & error);
+	bool	downloadFile								( std::string const & path, std::string const & dst);
 
 	std::string		getServIp							( void ) const;
 	std::string 	getPort								( void ) const;

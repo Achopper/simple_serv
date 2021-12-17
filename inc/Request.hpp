@@ -5,6 +5,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 class Request
 {
@@ -66,10 +67,12 @@ public:
 
 	std::map<std::string, std::string>		getHeadersMap();
 
-	void									parseReq(std::string & req);
+
 	void									checkHttpVersion(std::string & httpVersion);
 	void									checkMethod(std::string & method);
 	void									checkBodyHeder();
+	void									parseReq(std::string const & req);
+
 
 
 };

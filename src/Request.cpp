@@ -132,9 +132,10 @@ void	Request::parseReq(std::string const & req){
 				_buf.erase(0, endLine + 2) ;
 				str2.clear();
 			}
-			std::string сonLen("Content-Length");
-			if (!_headersMap[сonLen].empty())
-				_bodySize = static_cast<size_t>(stoll(_headersMap[сonLen]));//С++11
+			// std::string сonLen("Content-Length");
+			std::string conLen("Content-Length");
+			if (!_headersMap[conLen].empty())
+				_bodySize = static_cast<size_t>(stoll(_headersMap[conLen]));//С++11
 		}
 		else if (_isHeadersEnd && _method == "POST")
 		{

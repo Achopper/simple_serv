@@ -1,7 +1,8 @@
 NAME = supaDupaServ
 
-FLAGS = -Wall -Werror -Wextra --std=c++98 -Wconversion -fsanitize=address -g
-CC	= clang++
+# FLAGS = -Wall -Werror -Wextra --std=c++98 -Wconversion -fsanitize=address -g
+# CC	= clang++
+CC	= g++
 RM	= rm -f
 
 SOURCES_DIR = src/

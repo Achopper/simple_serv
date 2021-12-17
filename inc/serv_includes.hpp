@@ -31,7 +31,8 @@ typedef struct sockaddr_storage sockaddr_storage;
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <machine/types.h>
+// #include <machine/types.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <dirent.h>
 

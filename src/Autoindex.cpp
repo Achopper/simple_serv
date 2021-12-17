@@ -1,6 +1,7 @@
 
 
 #include "../inc/Autoindex.hpp"
+#include <cstring>
 
 Autoindex::Autoindex(void)
 {

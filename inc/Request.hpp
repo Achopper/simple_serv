@@ -5,6 +5,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 // #define PARSE_FIRST_LINE 1
 // #define PARSE_HEADERS 2

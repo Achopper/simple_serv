@@ -1,5 +1,6 @@
 
 #include "../inc/Response.hpp"
+#include <cstring>
 
 std::map<std::string, std::string> Response::setStatusCode()
 {
@@ -221,7 +222,8 @@ bool Response::checkLocation(std::vector<Location>::const_iterator &iter, std::s
 		isF = true;
 		if (_postfix == _filename)
 			_postfix = "";
-		_filename = std::string(std::strrchr(reqPath.c_str(), '/'));
+		// _filename = std::string(std::strrchr(reqPath.c_str(), '/'));
+		_filename = std::string(strrchr(reqPath.c_str(), '/'));
 		_postfix = _postfix.substr(0,_postfix.length() - _filename.length());
 	}
 	if (_prefix == iter->getName())

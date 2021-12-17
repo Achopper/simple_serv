@@ -1,5 +1,4 @@
 #include "../inc/Core.hpp"
-// #include "../inc/Env.hpp"
 
 Env::Env(){}
 
@@ -18,9 +17,27 @@ Env &Env::operator=(const Env &other){
 }
 
 std::map<std::string, std::string>& Env::getEnvMap(){return _envMap;}
-char	*Env::getEnvArr(){return _envArr;}
+char	**Env::getEnvArr(){return _envArr;}
 
-void	Env::setEnvArr(){}
+void	Env::setEnvArr(){
+
+	// extern char **environ;
+    _envArr = new char *[_envMap.size() + 1];
+    _envArr[_envMap.size()] = NULL;
+    std::map<std::string, std::string>::const_iterator it = _envMap.begin();
+    size_t i = 0;
+    for (; it != _envMap.end(); ++it, ++i)
+	{
+        _envArr[i] = strdup((it->first + "=" + it->second).c_str());
+	}
+	for(size_t k = 0; k < i ; ++k)
+	{
+		for(size_t j = 0; j < strlen(_envArr[k]); ++j)
+			std::cout << _envArr[k][j];// << " ";
+    	std::cout << std::endl;
+	}
+	
+}
 // void	Env::addServEnvToMap(Server &server){
 	// _envMap["AUTH_TYPE"] = server.get...();
 	// _envMap["GETAWAY_INTERFACE"] = server.get...();
@@ -44,11 +61,6 @@ void	Env::setEnvArr(){}
 // // 	SERVER_SIGNATURE
 // }
 void	Env::addHttpEnvToMap(Request &request){
-	
-	// std::map<std::string, std::string>::iterator it = request.getHeadersMap().find("Host");
-	// if (it  != request.getHeadersMap().end())
-	// 	std::cout << "Host is here!!!!!" << std::endl;
-
 	_envMap["HTTP_HOST"] = request.getHeadersMap()["Host"];
 	_envMap["HTTP_ACCEPT"] = request.getHeadersMap()["Accept"];
 	_envMap["HTTP_USER_AGENT"] = request.getHeadersMap()["User-Agent"];
@@ -64,8 +76,6 @@ void	Env::addHttpEnvToMap(Request &request){
 	_envMap["CONTENT_TYPE"] = request.getHeadersMap()["Content-Type"];
 	_envMap["QUERY_STRING"] = request.getQueryString();
 
-	// _envMap[""] = request.getHeadersMap()[""];
-
-	for (std::map<std::string, std::string>::iterator it = _envMap.begin(); it != _envMap.end(); ++it)
-		std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;
+	// for (std::map<std::string, std::string>::iterator it = _envMap.begin(); it != _envMap.end(); ++it)
+	// 	std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;
 }

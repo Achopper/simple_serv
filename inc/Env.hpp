@@ -9,10 +9,10 @@ class Env
 		Env();
 		~Env();
 		Env(Env const &other);
-		Env &operator = (Env const &other);
+		Env &operator=(Env const &other);
 
 		std::map<std::string, std::string>	&getEnvMap();
-		char								*getEnvArr();
+		char								**getEnvArr();
 
 		void								setEnvArr();
 		// void								addServEnvToMap(Server &server);
@@ -21,7 +21,7 @@ class Env
 	private:
 		std::map<std::string, std::string>	_envMap;
 		// std::string	;
-		char								*_envArr;
+		char								**_envArr;
 };
 
 #endif //ENV_HPP

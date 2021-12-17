@@ -365,7 +365,7 @@ bool Response::POST(const int & socket)
 			{
 				//TODO make file
 			}
-			else if (iter->getName() == "/download" && /* !body.empty() */ !_request.getBuf().empty())
+			else if (iter->getName() == "/downloads" && /* !body.empty() */ !_request.getBuf().empty())
 			{
 				if (_server.downloadFile(_request.getBuf().substr(_request.getBuf().find('=') + 1), url))
 				{

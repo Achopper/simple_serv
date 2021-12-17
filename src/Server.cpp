@@ -159,10 +159,16 @@ bool Server::downloadFile(std::string const &path, std::string const & dst)
 	std::ofstream dest;
 	src.open(_pt,std::ios_base::binary);
 	dest.open(dst + "/" + std::string(_pt.substr(_pt.rfind('/'))), std::ios_base::binary);
-	if (!src.is_open() || !dest.is_open())
+	if (!src.is_open())
 		return (false);
+	if (!dest.is_open())
+	{
+		src.close();
+		return (false);
+	}
 	else
 		dest << src.rdbuf();
+
 	return true;
 }
 

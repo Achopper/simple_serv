@@ -36,6 +36,7 @@ Location &Location::operator=(const Location &obj)
 		_autoindex = obj._autoindex;
 		_redirect = obj._redirect;
 		_pathToRedirect = obj._pathToRedirect;
+		_cgi = obj._cgi;
 	}
 	return (*this);
 }

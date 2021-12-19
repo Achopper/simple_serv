@@ -170,4 +170,4 @@ void	Client::setRequest(std::string const &req)
 	
 }
 
-Env&	Client::getEnv(){return _env;}
+//Env&	Client::getEnv(){return _env;}

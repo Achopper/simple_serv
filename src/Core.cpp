@@ -4,10 +4,9 @@
 
 Core::Core(Config & config)
 {
-	memset (&_fdset, 0, sizeof(_fdset));
-	// for (int i = 0; i < OPEN_MAX; ++i)
-	for (int i = 0; i < FOPEN_MAX; ++i)
-		_fdset[i].fd = -1;
+	memset (&_fdset, -1, sizeof(_fdset));
+//	for (int i = 0; i < OPEN_MAX; ++i)
+//		_fdset[i].fd = -1;
 	_servSize = config.getServCount();
 	_servers = config.getServers();
 }
@@ -35,10 +34,8 @@ bool Core::acceptClientConnect(std::vector<Server>::iterator& iterator, nfds_t& 
 	}
 	iterator->getServerFd()->revents &= ~POLLRDNORM;
 	fcntl(newSock, F_SETFL , O_NONBLOCK);
-	// for (int j = static_cast<int>(num); j < OPEN_MAX + 1; ++j) {
-	for (int j = static_cast<int>(num); j < FOPEN_MAX + 1; ++j) {
-		// if (j == OPEN_MAX) {
-		if (j == FOPEN_MAX) {
+	for (int j = static_cast<int>(num); j < OPEN_MAX + 1; ++j) {
+		if (j == OPEN_MAX) {
 			std::cerr << "Can't serve more clients. Try again later.." << std::endl;
 			break; //TODO exit?
 		}
@@ -61,7 +58,6 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 	char buf[BUFSIZ] = {0};
 
 	valread = recv(it->getSetFd()->fd, buf, DEF_CLI_MAX_BDY_SZ, 0);
-	std::cout << REDCOL << valread << RESCOL <<std::endl;
 	it->setConnTime();
 	if (valread < 0)
 	{
@@ -91,9 +87,16 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 bool Core::sendResponce(std::list<Client>::iterator &it, nfds_t& num)
 {
 	ssize_t s;
-	it->makeResponse();
-	//TODO add content-len
+	try
+	{
+		it->makeResponse();
+	}
+	catch (std::string &cgi)
+	{
+		goto cgi;
+	}
 	s = send(it->getSetFd()->fd, it->getResponse()->getResp().c_str(), it->getResponse()->getResp().length(), 0);
+cgi:
 	if (s < 0)
 	{
 		std::cout << REDCOL"Error in send: " << strerror(errno) << RESCOL << std::endl;
@@ -171,9 +174,7 @@ void Core::mainLoop() {
 					cli_it->setRequest(cli_it->getReq());
 				}
 				if (!cli_it->getRequest().getIsRequestEnd())
-				{
 					continue;
-				}
 				else
 				{
 					cli_it->getSetFd()->revents &= ~(POLLRDNORM | POLLERR);
@@ -183,8 +184,8 @@ void Core::mainLoop() {
 
 					try //TODO mb del
 					{
-						cli_it->getEnv().addHttpEnvToMap(cli_it->getRequest());
-						cli_it->getEnv().setEnvArr();
+						cli_it->getResponse()->getEnv().addHttpEnvToMap(cli_it->getRequest());
+						cli_it->getResponse()->getEnv().setEnvArr();
 					}
 					catch(const std::exception& e)
 					{

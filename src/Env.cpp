@@ -1,4 +1,6 @@
 #include "../inc/Core.hpp"
+#include "../inc/Env.hpp"
+
 
 Env::Env(){}
 
@@ -12,12 +14,20 @@ Env &Env::operator=(const Env &other){
 	{
 		_envMap = other._envMap;
 		_envArr = other._envArr;
+		_server = other._server;
 	}
 	return (*this);
 }
 
-std::map<std::string, std::string>& Env::getEnvMap(){return _envMap;}
-char	**Env::getEnvArr(){return _envArr;}
+std::map<std::string, std::string>& Env::getEnvMap()
+{
+	return _envMap;
+}
+
+char	**Env::getEnvArr()
+{
+	return _envArr;
+}
 
 void	Env::setEnvArr(){
 
@@ -30,12 +40,12 @@ void	Env::setEnvArr(){
 	{
         _envArr[i] = strdup((it->first + "=" + it->second).c_str());
 	}
-	for(size_t k = 0; k < i ; ++k)
-	{
-		for(size_t j = 0; j < strlen(_envArr[k]); ++j)
-			std::cout << _envArr[k][j];// << " ";
-    	std::cout << std::endl;
-	}
+//	for(size_t k = 0; k < i ; ++k)
+//	{
+//		for(size_t j = 0; j < strlen(_envArr[k]); ++j)
+//			std::cout << _envArr[k][j];// << " ";
+//    	std::cout << std::endl;
+//	}
 	
 }
 // void	Env::addServEnvToMap(Server &server){
@@ -71,11 +81,15 @@ void	Env::addHttpEnvToMap(Request &request){
 	_envMap["HTTP_X_FORWARDED_FOR"] = request.getHeadersMap()[""]; //?
 	_envMap["HTTP_REFERER"] = request.getHeadersMap()["Referer"];
 	_envMap["HTTP_REFERER"] = request.getHeadersMap()["Referer"];
-
 	_envMap["CONTENT_LENGTH"] = request.getHeadersMap()["Content-Length"];
 	_envMap["CONTENT_TYPE"] = request.getHeadersMap()["Content-Type"];
 	_envMap["QUERY_STRING"] = request.getQueryString();
 
 	// for (std::map<std::string, std::string>::iterator it = _envMap.begin(); it != _envMap.end(); ++it)
 	// 	std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;
+}
+
+void Env::setServer(Server const & server)
+{
+	_server = server;
 }

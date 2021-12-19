@@ -1,8 +1,7 @@
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Map;
 
 public class Java {
@@ -29,7 +28,8 @@ public class Java {
         return http;
     }
 
-    public static String formCreator() {
+    public static String formCreator(String host) {
+
         String html = "<!DOCTYPE html>" +
                 "<html>" +
                 "<head>" +
@@ -38,7 +38,7 @@ public class Java {
                 "<head>" +
                 "<body>" +
                 "<h2 align=center>Choose your zodiac sign</h2>" +
-                "<form align=center name = \"myform\" action=\"http://localhost:8080/horoscope\" method=\"POST\">" +
+                "<form align=center name = \"myform\" action=\"http://" + host +  "/horoscope\" method=\"POST\">" +
                 "<input name=\"AQUARIUS\" type=\"submit\" value=\"AQUARIUS\">" + "      " +
                 "<input name=\"PISCES\" type=\"submit\" value=\"PISCES\">" + "      " +
                 "<input name=\"ARIES\" type=\"submit\" value=\"ARIES\">" +
@@ -118,53 +118,55 @@ public class Java {
 
         String request;
         String[] subStr;
-        String delimeter = " ";
         String method = null;
 
         Map<String, String> env = System.getenv();
 
-        for (String envName : env.keySet()) {
-            if (envName.equals("REQUEST")){
-                System.err.format("%s=%s%n", envName, env.get(envName));
-                request = env.get(envName);
-                subStr = request.split(delimeter);
-                method = subStr[0];
-            }
-        }
+        request = env.get("REQUEST");
+        String host = env.get("HTTP_HOST");
+        subStr = request.split(" ");
+        method = subStr[0];
 
-
-       assert method != null;
-
-       if (method.equals("GET")) {
-            System.out.println(formCreator());
+        assert method != null;
+        if (method.equals("GET")) {
+            System.out.println(formCreator(host));
             System.exit(0);
         }
-        else if (method.equals("POST"))
-        {
-        if (env.containsKey("AQUARIUS"))
-            responseToBrowser("aquarius");
-        else if (env.containsKey("PISCES"))
-            responseToBrowser("pisces");
-        else if (env.containsKey("ARIES"))
-            responseToBrowser("aries");
-        else if (env.containsKey("TAURUS"))
-            responseToBrowser("taurus");
-        else if (env.containsKey("GEMINI"))
-            responseToBrowser("gemini");
-        else if (env.containsKey("CANCER"))
-            responseToBrowser("cancer");
-        else if (env.containsKey("LEO"))
-            responseToBrowser("leo");
-        else if (env.containsKey("VIRGO"))
-            responseToBrowser("virgo");
-        else if (env.containsKey("LIBRA"))
-            responseToBrowser("libra");
-        else if (env.containsKey("SCORPIO"))
-            responseToBrowser("scorpio");
-        else if (env.containsKey("SAGITTARIUS"))
-            responseToBrowser("sagittarius");
-        else if (env.containsKey("CAPRICORN"))
-            responseToBrowser("capricorn");
-            }
+
+        try {
+            File file = new File("../../../../html/req_body_tmp.txt");
+            FileReader fr = new FileReader(file);
+            BufferedReader reader = new BufferedReader(fr);
+            String line = reader.readLine();
+            subStr = line.split("=");
+            responseToBrowser(subStr[0].toLowerCase(Locale.ROOT));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+//        if (env.containsKey("AQUARIUS"))
+//            responseToBrowser("aquarius");
+//        else if (env.containsKey("PISCES"))
+//            responseToBrowser("pisces");
+//        else if (env.containsKey("ARIES"))
+//            responseToBrowser("aries");
+//        else if (env.containsKey("TAURUS"))
+//            responseToBrowser("taurus");
+//        else if (env.containsKey("GEMINI"))
+//            responseToBrowser("gemini");
+//        else if (env.containsKey("CANCER"))
+//            responseToBrowser("cancer");
+//        else if (env.containsKey("LEO"))
+//            responseToBrowser("leo");
+//        else if (env.containsKey("VIRGO"))
+//            responseToBrowser("virgo");
+//        else if (env.containsKey("LIBRA"))
+//            responseToBrowser("libra");
+//        else if (env.containsKey("SCORPIO"))
+//            responseToBrowser("scorpio");
+//        else if (env.containsKey("SAGITTARIUS"))
+//            responseToBrowser("sagittarius");
+//        else if (env.containsKey("CAPRICORN"))
+//            responseToBrowser("capricorn");
     }
 }

@@ -3,9 +3,6 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include <map>
-#include <string>
-#include <vector>
 
 class Request
 {

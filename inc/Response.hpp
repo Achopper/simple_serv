@@ -8,6 +8,7 @@
 #include "DefaultPage.hpp"
 #include "Request.hpp"
 #include "Autoindex.hpp"
+#include "Env.hpp"
 
 class Server;
 
@@ -22,6 +23,7 @@ private:
 	Server												_server;
 	Request												_request;
 	size_t 												_maxLen;
+	Env													_env;
 	static std::map<std::string, std::string> 			_statusCodes;
 	static std::map<std::string, std::string> 			_contentType;
 
@@ -51,16 +53,18 @@ public:
 	std::string			getCode							( void ) const;
 	const std::string &	getBody							( void ) const;
 	std::string			getMethod						( void ) const;
+	Env&				getEnv							( void );
 
 	void 		addCodetoResp							( std::string const &code );
 	void 		addContentLen							( std::string::size_type const &len );
 	void 		addContentType							( std::string const & filePath );
 	void 		addServerName							( std::string const & serverName );
-	bool 		callCgi									( const char **env, int sock);
+	bool		makeCgi									( int &socket, Location const &location);
+	bool 		cgiCall									( int socket, const char *body, Location const &location);
 
-	bool 		GET										( const int & sock );
+	bool 		GET										( int & sock );
 	bool		DELETE									( void );
-	bool 		POST									( const int & sock );
+	bool 		POST									( int & sock );
 	bool 		getPage									( std::string const & path );
 	void 		fillResponse							( void );
 	bool		checkLocation							(  std::vector<Location>::const_iterator &lit,

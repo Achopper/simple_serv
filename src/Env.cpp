@@ -19,9 +19,34 @@ Env &Env::operator=(const Env &other){
 std::map<std::string, std::string>& Env::getEnvMap(){return _envMap;}
 char	**Env::getEnvArr(){return _envArr;}
 
+void	Env::addEnvToMap(){
+
+	extern char **environ;
+	std::string str;
+	std::vector<std::string> strVec;
+	size_t j = 0;
+
+	for(size_t k = 0; environ[k] ; ++k)
+	{
+		for(; j < strlen(environ[k]); ++j)
+			str += environ[k][j];
+		strVec.push_back(str);
+		j = 0;
+		str.clear();
+	}
+	std::vector<std::string>::iterator it = strVec.begin();
+	std::vector<std::string>::iterator ite = strVec.end();
+	for (;it != ite; ++it)
+	{
+		std::string s = *it;
+		std::string first = s.substr(0, s.find('='));
+		std::string second = s.substr(s.find("=")+1);
+		_envMap[first] = second;
+	}
+}
 void	Env::setEnvArr(){
 
-	// extern char **environ;
+	addEnvToMap();
     _envArr = new char *[_envMap.size() + 1];
     _envArr[_envMap.size()] = NULL;
     std::map<std::string, std::string>::const_iterator it = _envMap.begin();

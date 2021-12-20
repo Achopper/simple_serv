@@ -17,6 +17,7 @@ class Env
 		void								setEnvArr();
 		// void								addServEnvToMap(Server &server);
 		void								addHttpEnvToMap(Request &request);
+		void								addEnvToMap();
 
 	private:
 		std::map<std::string, std::string>	_envMap;

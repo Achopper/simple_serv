@@ -23,6 +23,7 @@ class Env
 		std::map<std::string, std::string>	_envMap;
 		// std::string	;
 		char								**_envArr;
+		size_t								_arrRows;
 };
 
 #endif //ENV_HPP

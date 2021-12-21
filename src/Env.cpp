@@ -1,17 +1,24 @@
 #include "../inc/Core.hpp"
 
-Env::Env(){}
+Env::Env():_arrRows(0){}
 
-Env::~Env(){}
+Env::~Env(){
+	
+    for (size_t i = 0; i < _arrRows; i++)
+        delete[] _envArr[i];
+    // delete[] _envArr;
+}
 
 Env::Env(Env const &other){
 	*this = other;
 }
 Env &Env::operator=(const Env &other){
-		if (this != &other)
+	
+	if (this != &other)
 	{
 		_envMap = other._envMap;
 		_envArr = other._envArr;
+		_arrRows = other._arrRows;
 	}
 	return (*this);
 }
@@ -47,22 +54,45 @@ void	Env::addEnvToMap(){
 void	Env::setEnvArr(){
 
 	addEnvToMap();
-    _envArr = new char *[_envMap.size() + 1];
+    _envArr = new char *[_envMap.size()];//384 1 leak
+    // _envArr = new char *[_envMap.size() + 1];//400 1 leak
     _envArr[_envMap.size()] = NULL;
     std::map<std::string, std::string>::const_iterator it = _envMap.begin();
-    size_t i = 0;
-    for (; it != _envMap.end(); ++it, ++i)
+    for (; it != _envMap.end(); ++it, ++_arrRows)
 	{
-        _envArr[i] = strdup((it->first + "=" + it->second).c_str());
+        _envArr[_arrRows] = strdup((it->first + "=" + it->second).c_str());
 	}
-	for(size_t k = 0; k < i ; ++k)
+	// print arr
+	for(size_t k = 0; k < _arrRows ; ++k)
 	{
 		for(size_t j = 0; j < strlen(_envArr[k]); ++j)
-			std::cout << _envArr[k][j];// << " ";
+			std::cout << _envArr[k][j];
     	std::cout << std::endl;
-	}
-	
+	}	
 }
+
+// void Env::setEnvArr(){
+
+// 	addEnvToMap();
+//     char	** envArr = new char *[_envMap.size()];//384 1 leak
+//     // _envArr = new char *[_envMap.size() + 1];//400 1 leak
+//     envArr[_envMap.size()] = NULL;
+//     std::map<std::string, std::string>::const_iterator it = _envMap.begin();
+//     for (; it != _envMap.end(); ++it, ++_arrRows)
+// 	{
+//         envArr[_arrRows] = strdup((it->first + "=" + it->second).c_str());
+// 	}
+
+// 	// print arr
+// 	for(size_t k = 0; k < _arrRows ; ++k)
+// 	{
+// 		for(size_t j = 0; j < strlen(envArr[k]); ++j)
+// 			std::cout << envArr[k][j];
+//     	std::cout << std::endl;
+// 	}	
+// 	_envArr = envArr;
+// }
+
 // void	Env::addServEnvToMap(Server &server){
 	// _envMap["AUTH_TYPE"] = server.get...();
 	// _envMap["GETAWAY_INTERFACE"] = server.get...();

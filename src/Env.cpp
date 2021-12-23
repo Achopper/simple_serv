@@ -54,8 +54,7 @@ void	Env::addEnvToMap(){
 void	Env::setEnvArr(){
 
 	addEnvToMap();
-    _envArr = new char *[_envMap.size()];//384 1 leak
-    // _envArr = new char *[_envMap.size() + 1];//400 1 leak
+    _envArr = new char *[_envMap.size() + 1];
     _envArr[_envMap.size()] = NULL;
     std::map<std::string, std::string>::const_iterator it = _envMap.begin();
     for (; it != _envMap.end(); ++it, ++_arrRows)

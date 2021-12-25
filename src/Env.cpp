@@ -70,8 +70,6 @@ char	**Env::makeEnvArr(){
 	addEnvToMap();
 
     envArr = new char *[_envMap.size() + 1];
-	if (!envArr)
-		throw std::exception();
     envArr[_envMap.size()] = NULL;
     std::map<std::string, std::string>::const_iterator it = _envMap.begin();
     for (; it != _envMap.end(); ++it, ++_arrRows)
@@ -146,12 +144,13 @@ void	Env::addHttpEnvToMap(Request &request){
 	_envMap["CONTENT_LENGTH"] = request.getHeadersMap()["Content-Length"];
 	_envMap["CONTENT_TYPE"] = request.getHeadersMap()["Content-Type"];
 	_envMap["QUERY_STRING"] = request.getQueryString();
+	_envMap["REQUEST"] = request.getMethod();
 
 	// for (std::map<std::string, std::string>::iterator it = _envMap.begin(); it != _envMap.end(); ++it)
 	// 	std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;
 }
 
-void Env::setServer(Server const & server)
+void Env::setServer(Server const *server)
 {
 	_server = server;
 }

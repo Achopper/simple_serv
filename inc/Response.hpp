@@ -60,7 +60,8 @@ public:
 	void 		addContentType							( std::string const & filePath );
 	void 		addServerName							( std::string const & serverName );
 	bool		makeCgi									( int &socket, Location const &location);
-	bool 		cgiCall									( int socket, const char *body, Location const &location);
+	bool 		cgiCall									( int socket, const char *body, Location const &location,
+															  char **envArr);
 
 	bool 		GET										( int & sock );
 	bool 		HEAD									( int & sock );

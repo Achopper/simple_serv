@@ -95,7 +95,7 @@ bool Response::setBody(const std::string &body)
 void Response::setServer(const Server &server)
 {
 	_server = server;
-	_env.setServer(server);
+	_env.setServer(&server);
 }
 
 void Response::setRequest(const Request &request)
@@ -145,35 +145,26 @@ void Response::addContentLen(const std::string::size_type &len)
 
 bool Response::makeCgi(int &socket, Location const &location)
 {
-	//char *cstr_2 = nullptr;
 	std::string cstr_2;
 
 	std::stringstream http;
 	std::string path;
-	//std::string body;
+	_env.addHttpEnvToMap(_request);
+	char **envArr = _env.makeEnvArr();
 
-	//char *p = strstr(buf, "index");
 	if (location.getName() == CGI_NAME){
-		//std::cerr << "FORK" << std::endl;
-		if (_request.getMethod() == "POST"){
-			//cstr_2 = new char[_request.getBody().length() + 1];
-			//strcpy(cstr_2, _request.getBody().c_str());
+		if (_request.getMethod() == "POST")
 			cstr_2 = _request.getBody();
-		}
-//		*strchr(buf, '\n') = '\0';
-//		std::string req_1 = buf;
-		std::string req = "REQUEST=" + _request.getMethod();
-		char *cstr = new char[req.length() + 1];
-		strcpy(cstr, req.c_str());
-		_env.getEnvArr()[0] = cstr;
-		cgiCall( socket, cstr_2.data(), location);
-		delete [] cstr;
+		cgiCall( socket, cstr_2.data(), location, envArr);
+		for (size_t i = 0; i < _env.getArrRows(); i++)
+			delete[] envArr[i];
+		delete [] envArr;
 		return true;
 	}
 	return false;
 }
 
-bool Response::cgiCall(int fd, const char *body, Location const &location)
+bool Response::cgiCall(int fd, const char *body, Location const &location, char **envArr)
 {
 	pid_t	pid;
 	int     status;
@@ -197,7 +188,8 @@ bool Response::cgiCall(int fd, const char *body, Location const &location)
 
 		dup2(reqFd, STDIN_FILENO);
 		dup2(fd, STDOUT_FILENO);
-		if (execve("/bin/sh", argv, _env.getEnvArr()) < 0){
+
+		if (execve("/bin/sh", argv, envArr) < 0){
 			std::cerr << "execute error" << std::endl;
 			exit(-1);
 		}
@@ -440,10 +432,6 @@ bool Response::POST( int & socket)
 			}
 			if (!iter->getCgi().empty())
 			{
-				for (int i = 0; _env.getEnvArr()[i]; ++i)
-				{
-					std::cout << REDCOL << _env.getEnvArr()[i] << RESCOL << std::endl;
-				}
 				makeCgi(socket, *iter);
 				unlink("./html/req_body_tmp.txt");
 				throw std::string("cgi");

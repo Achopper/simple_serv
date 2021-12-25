@@ -23,12 +23,14 @@ public:
 		void								addHttpEnvToMap(Request &request);
 		void								addEnvToMap();
 		char								**makeEnvArr();
+		void 	setServer					(Server const *server);
 
 	private:
 
 		std::map<std::string, std::string>	_envMap;
 		char								**_envArr;
 		size_t								_arrRows;
+		const Server*						_server;
 };
 
 #endif //ENV_HPP

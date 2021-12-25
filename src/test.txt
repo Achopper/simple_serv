@@ -22,7 +22,7 @@ while (tail != msg_end && *tail != '\r') ++tail;
 const char *colon = memchr(head, tail, ':');
 
 
-POST /horoscope HTTP/1.1
+POST / HTTP/1.1
 Content-Type: text/plain
 Connection: keep-alive
 Content-Length: 17

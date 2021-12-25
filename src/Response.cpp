@@ -452,6 +452,12 @@ bool Response::POST( int & socket)
 	{
 		if (checkLocation(iter, _request.getUrl(), url, isFile))
 		{
+			_maxLen = iter->getClientSize();
+			if (_request.getBody().length() > _maxLen)
+			{
+				_code = "413";
+				return (false);
+			}
 			if (!iter->getMethods()[_request.getMethod()])
 			{
 				_code = "405";

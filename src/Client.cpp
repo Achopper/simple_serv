@@ -11,7 +11,7 @@ Client::Client (Server const & server, pollfd* set)
 	_connectTime (std::time(nullptr)),
 	_finishReadReq(false)
 {
-	_request = Request();
+	//_request = Request();
 	std::cout << GREENCOL"Client " << set->fd << " connected" << RESCOL << std::endl;
 }
 
@@ -136,20 +136,24 @@ void Client::makeResponse()
 		std::cout << _response.getResp() << std::endl;
 		return;
 	}
-	if (_request.getMethod() == "GET")
-		_response.GET(_setFd->fd);
-	else if (_request.getMethod() == "DELETE")
-		_response.DELETE();
-	else if (_request.getMethod() == "POST")
-		_response.POST(_setFd->fd);
-	else if (_request.getMethod() == "HEAD")
-		_response.HEAD(_setFd->fd);
-	else
-		_response.setCode("405");
-	_response.fillResponse();
+	if (_request.getErrCode().empty())
+	{
+		if (_request.getMethod() == "GET")
+			_response.GET(_setFd->fd);
+		else if (_request.getMethod() == "DELETE")
+			_response.DELETE();
+		else if (_request.getMethod() == "POST")
+			_response.POST(_setFd->fd);
+		else if (_request.getMethod() == "HEAD")
+			_response.HEAD(_setFd->fd);
+		else
+			_response.setCode("405");
+	}
+		_response.fillResponse();
+
 #if DEBUG_MODE > 0
-	std::cout <<GREENCOL "Response of client " << _setFd->fd << ": " << RESCOL << std::endl << _response.getResp()  <<
-		std::endl;
+//	std::cout <<GREENCOL "Response of client " << _setFd->fd << ": " << RESCOL << std::endl << _response.getResp()  <<
+//		std::endl;
 #endif
 
 }
@@ -165,9 +169,10 @@ void	Client::setRequest(std::string const &req)
 	{
 		std::cout << "ИСКЛЮЧЕНИЕ ПАРСИНГ!!!!!!!!!!!!" << std::endl;
 		std::cout << "КОД!!!!!!!!!!!!  "  << _request.getErrCode() << std::endl;
+		_request._isRequestEnd = true;
+		_response.setCode(_request.getErrCode());
 		// std::cerr << e.what() << '\n';
 	}
 	
 }
 
-//Env&	Client::getEnv(){return _env;}

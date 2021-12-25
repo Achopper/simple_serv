@@ -178,30 +178,23 @@ void Core::mainLoop() {
 					cli_it->setFinishReadReq(true);
 					cli_it->getResponse()->setRequest(cli_it->getRequest());
 				}
-
-//					try //TODO mb del
-//					{
-//
-//						cli_it->getEnv().addHttpEnvToMap(cli_it->getRequest());
-//						// cli_it->getEnv().setEnvArr();
-//						char **envArr = cli_it->getEnv().makeEnvArr();
-//						for (size_t i = 0; i < cli_it->getEnv().getArrRows(); i++)
-//							delete[] envArr[i];
-//						delete [] envArr;
-//					}
-//					catch(const std::exception& e)
-//					{
-//						std::cout << "ENV ERR!!!!!!!!!\n";
-//						// std::cerr << e.what() << '\n';
-//					}
 			}
 			if (cli_it->getFinishReadReq())
 			{
 #if DEBUG_MODE > 0
+
 				std::cout << GREENCOL"Client " << cli_it->getSetFd()->fd << " send"  << " revent is " <<
 					cli_it->getSetFd()->revents << RESCOL << std::endl;
-					 std::cout << "Full req of client " << cli_it->getSetFd()->fd
-					<< " is: " << std::endl << cli_it->getReq() << std::endl;
+					 std::cout << GREENCOL << "Full req of client " << cli_it->getSetFd()->fd
+					<< " is: " << std::endl
+					 << cli_it->getRequest().getMethod()  << " "
+					 << cli_it->getRequest().getUrl() << " "
+					 << cli_it->getRequest().getHttpVersion() << std::endl;
+				for (std::map<std::string,std::string>::iterator it = cli_it->getRequest().getHeadersMap().begin();
+				it !=  cli_it->getRequest().getHeadersMap().end(); ++it)
+				std::cout << it->first + ": " + it->second << std::endl;
+				std::cout << REDCOL << "Body is: " << cli_it->getRequest().getBody() << RESCOL << std::endl;
+
 #endif
 				sendResponce(cli_it, numfds);
 			}

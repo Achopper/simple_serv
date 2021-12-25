@@ -159,6 +159,11 @@ void	Request::setFirstLine(size_t &endLine){
 }
 void	Request::setHeadersMap(size_t & endLine, size_t & endHeaders){
 
+	if (_buf == "\r\n")
+	{
+		_buf.erase(0, endLine + 2);
+		return;
+	}
 	std::string	str = _buf.substr(0, endLine);
 	std::vector<std::string> headLines = split2(str, ": ");
 	if (headLines.size() == 2)
@@ -168,7 +173,6 @@ void	Request::setHeadersMap(size_t & endLine, size_t & endHeaders){
 		_errCode = "400";
 		throw std::exception();
 	}
-
 	if (endHeaders == endLine )
 	{
 		_buf.erase(0, endLine + 4) ;
@@ -206,7 +210,7 @@ std::string	Request::getQueryString(){
 bool	Request::getIsRequestEnd(){
 	return _isRequestEnd;
 }
-std::map<std::string, std::string>	Request::getHeadersMap(){
+std::map<std::string, std::string>&	Request::getHeadersMap(){
 	return _headersMap;
 }
 
@@ -232,17 +236,27 @@ void	Request::parseReq(std::string const & req){
 	addBuf(req);
 	size_t endLine = _buf.find("\r\n") ;
 	size_t endHeaders = _buf.find("\r\n\r\n") ;
-	
+
 	while(endLine != static_cast<size_t>(-1) && !_isBodyEnd)
 	{
+	//	std::cout << req << std::endl;
+//		if (_buf == "\r\n")
+//			return;
 		if (!_isFirstLineSet)
 			setFirstLine(endLine);
-		else if (_isFirstLineSet && !_isHeadersEnd)
-		{	
-			setHeadersMap(endLine, endHeaders);
- 			setBodySize();
-			setIsChunked();
-
+		else if ((_isFirstLineSet && !_isHeadersEnd))
+		{
+			if (_buf == "\r\n")
+			{
+				_isHeadersEnd = true;
+				//_isBodyEnd = true;
+			}
+			else
+			{
+				setHeadersMap(endLine, endHeaders);
+				setBodySize();
+				setIsChunked();
+			}
 		}
 		if (_isHeadersEnd && (_method == "POST" || _method == "DELETE"))
 		{

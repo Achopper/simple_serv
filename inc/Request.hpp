@@ -64,7 +64,7 @@ public:
 	std::string								getQueryString();
 	bool									getIsRequestEnd();
 
-	std::map<std::string, std::string>		getHeadersMap();
+	std::map<std::string, std::string>&		getHeadersMap();
 
 
 	void									checkHttpVersion(std::string & httpVersion);

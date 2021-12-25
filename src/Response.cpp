@@ -175,9 +175,9 @@ bool Response::cgiCall(int fd, const char *body, Location const &location, char 
 
 	pid = fork();
 
+	std::cout << REDCOL << body << RESCOL << std::endl;
 	if (pid < 0)
 		exit(-1);
-
 	else if (pid == 0){
 
 		std::ofstream out("./html/req_body_tmp.txt");
@@ -450,6 +450,7 @@ bool Response::POST( int & socket)
 				else
 					break;
 			}
+			_body = _request.getBody();
 			iter->getPathToRedir().empty() ? _code = "200" : "red";
 			return true;
 		}

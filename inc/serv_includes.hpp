@@ -11,7 +11,7 @@
 #define PROT "HTTP/1.1"
 //Define download directory && cgi location name
 #define DOWNLOAD_DIR "/downloads"
-#define CGI_NAME "/horoscope"
+#define CGI_NAME "/cgi-bin"
 #define TIMEOUT -1
 #define CLI_TIMEOUT_SEC 30
 #define DEF_CLI_MAX_BDY_SZ 1000*1024

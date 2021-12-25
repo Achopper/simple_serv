@@ -22,6 +22,7 @@ std::map<std::string, std::string> Response::setStatusCode()
 	res.insert(std::pair<std::string, std::string>("416", "Requested Range Not Satisfiable"));
 	res.insert(std::pair<std::string, std::string>("408", "Request Timeout"));
 	res.insert(std::pair<std::string, std::string>("413", "Payload Too Large"));
+	res.insert(std::pair<std::string, std::string>("666", "CGI DESTRUCTIBLE ERROR"));
 
 	res.insert(std::pair<std::string, std::string>("505", "HTTP Version Not Supported"));
 
@@ -169,8 +170,24 @@ bool Response::cgiCall(int fd, const char *body, Location const &location, char 
 	pid_t	pid;
 	int     status;
 	int     reqFd;
+	std::string cgi;
 	char *a = (char *)"/bin/sh";
 	char *b = (char *)(location.getCgi().data());
+	int i = 0;
+
+	while (envArr[i] != nullptr)
+	{
+		std::string url = envArr[i];
+		size_t pos = url.find("URL");
+		if (pos != std::string::npos){
+			std::cerr << url << std::endl;
+			pos = url.find("/", 5);
+			cgi = url.substr(pos + 1);
+			std::cerr << cgi << std::endl;
+		}
+		i++;
+	}
+
 	char   *argv[10] = { a, b, NULL };
 
 	pid = fork();
@@ -189,9 +206,24 @@ bool Response::cgiCall(int fd, const char *body, Location const &location, char 
 		dup2(reqFd, STDIN_FILENO);
 		dup2(fd, STDOUT_FILENO);
 
-		if (execve("/bin/sh", argv, envArr) < 0){
-			std::cerr << "execute error" << std::endl;
-			exit(-1);
+		if (cgi == "horoscope"){
+			if (execve(a, argv, envArr) < 0){
+				std::cerr << "execute error" << std::endl;
+				_code = "666";
+				fillResponse();
+				send(STDOUT_FILENO, _response.c_str(),_response.length(),0);
+				exit(-1);
+			}
+		} else {
+			cgi = "./cgi-bin/" + cgi;
+			const char *cstr = cgi.c_str();
+			if (execve(cstr, nullptr, envArr) < 0){
+				std::cerr << "execute error" << std::endl;
+				_code = "666";
+				fillResponse();
+				send(STDOUT_FILENO, _response.c_str(),_response.length(),0);
+				exit(-1);
+			}
 		}
 		close(reqFd);
 		out.close();
@@ -226,7 +258,7 @@ void Response::fillResponse()
 	addCodetoResp(_code);
 	if ((_code.at(0) == '4' || _code.at(0) == '5') && er.count(_code) > 0)
 		getPage(_server.getRoot() + er[_code]);
-	else if ((_code.at(0) == '4' || _code.at(0) == '5'))
+	else if ((_code.at(0) == '4' || _code.at(0) == '5' || _code.at(0) == '6'))
 		_body = errorPage.makePage(_code, _statusCodes[_code], _server.getServName());
 	addContentType(_request.getUrl());
 	addServerName(_server.getServName());

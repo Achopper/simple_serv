@@ -34,8 +34,8 @@ bool Core::acceptClientConnect(std::vector<Server>::iterator& iterator, nfds_t& 
 	}
 	iterator->getServerFd()->revents &= ~POLLRDNORM;
 	fcntl(newSock, F_SETFL , O_NONBLOCK);
-	for (int j = static_cast<int>(num); j < OPEN_MAX + 1; ++j) {
-		if (j == OPEN_MAX) {
+	for (int j = static_cast<int>(num); j < FOPEN_MAX + 1; ++j) {
+		if (j == FOPEN_MAX) {
 			std::cerr << "Can't serve more clients. Try again later.." << std::endl;
 			break; //TODO exit?
 		}
@@ -90,13 +90,12 @@ bool Core::sendResponce(std::list<Client>::iterator &it, nfds_t& num)
 	try
 	{
 		it->makeResponse();
+		s = send(it->getSetFd()->fd, it->getResponse()->getResp().c_str(), it->getResponse()->getResp().length(), 0);
 	}
 	catch (std::string &cgi)
 	{
-		goto cgi;
+		std::cout << GREENCOL << "That made " << cgi << " code!" << RESCOL << std::endl;
 	}
-	s = send(it->getSetFd()->fd, it->getResponse()->getResp().c_str(), it->getResponse()->getResp().length(), 0);
-cgi:
 	if (s < 0)
 	{
 		std::cout << REDCOL"Error in send: " << strerror(errno) << RESCOL << std::endl;
@@ -146,8 +145,6 @@ bool Core::initSocets()
 	}
 	return (true);
 }
-
-
 
 void Core::mainLoop() {
     nfds_t numfds = _servSize;

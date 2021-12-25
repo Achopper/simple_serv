@@ -61,7 +61,6 @@ Response::Response(const Response &obj)
 
 Response::~Response(void)
 {
-
 }
 
 Response &Response::operator=(const Response &obj)
@@ -304,8 +303,7 @@ bool Response::checkLocation(std::vector<Location>::const_iterator &iter, std::s
 		isF = true;
 		if (_postfix == _filename)
 			_postfix = "";
-		// _filename = std::string(std::strrchr(reqPath.c_str(), '/'));
-		_filename = std::string(strrchr(reqPath.c_str(), '/'));
+		_filename = std::string(std::strrchr(reqPath.c_str(), '/'));
 		_postfix = _postfix.substr(0,_postfix.length() - _filename.length());
 	}
 	if (_prefix == iter->getName())
@@ -470,6 +468,12 @@ bool Response::POST( int & socket)
 	}
 	_code = "403";
 	return false;
+}
+
+bool Response::HEAD(int &sock)
+{
+	_body = ""; //TODO is it right?
+	return (GET(sock));
 }
 
 

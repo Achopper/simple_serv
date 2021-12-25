@@ -63,6 +63,7 @@ public:
 	bool 		cgiCall									( int socket, const char *body, Location const &location);
 
 	bool 		GET										( int & sock );
+	bool 		HEAD									( int & sock );
 	bool		DELETE									( void );
 	bool 		POST									( int & sock );
 	bool 		getPage									( std::string const & path );

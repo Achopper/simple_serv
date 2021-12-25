@@ -4,7 +4,8 @@
 
 Env::Env(){}
 
-Env::~Env(){}
+Env::~Env(){
+}
 
 Env::Env(Env const &other){
 	*this = other;

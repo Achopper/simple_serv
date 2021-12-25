@@ -49,4 +49,3 @@ private:
 
 #endif
 
-//TODO close socket

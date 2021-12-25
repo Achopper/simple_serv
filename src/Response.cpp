@@ -34,6 +34,10 @@ std::map<std::string, std::string> Response::setContentType()
 
 	res["html"] = "text/html";
 	res["ico"] = "image/x-icon";
+	res["gif"] = "image/gif";
+	res["jpeg"] = "image/jpeg";
+	res["jpg"] = "image/jpeg";
+	res["png"] = "image/png";
 
 	return (res);
 }
@@ -57,7 +61,6 @@ Response::Response(const Response &obj)
 
 Response::~Response(void)
 {
-
 }
 
 Response &Response::operator=(const Response &obj)
@@ -72,6 +75,7 @@ Response &Response::operator=(const Response &obj)
 		_request = obj._request;
 		_maxLen = obj._maxLen;
 		_body = obj._body;
+		_env = obj._env;
 	}
 	return (*this);
 }
@@ -91,6 +95,7 @@ bool Response::setBody(const std::string &body)
 void Response::setServer(const Server &server)
 {
 	_server = server;
+	_env.setServer(server);
 }
 
 void Response::setRequest(const Request &request)
@@ -106,6 +111,11 @@ void Response::setCode(const std::string &code)
 std::string Response::getCode() const
 {
 	return (_code);
+}
+
+Env&	Response::getEnv()
+{
+	return _env;
 }
 
 const std::string &Response::getBody() const
@@ -131,6 +141,73 @@ void Response::addCodetoResp(const std::string &code)
 void Response::addContentLen(const std::string::size_type &len)
 {
 	_response.append("Content-Length: " + std::to_string(len) + "\r\n\r\n");
+}
+
+bool Response::makeCgi(int &socket, Location const &location)
+{
+	//char *cstr_2 = nullptr;
+	std::string cstr_2;
+
+	std::stringstream http;
+	std::string path;
+	//std::string body;
+
+	//char *p = strstr(buf, "index");
+	if (location.getName() == CGI_NAME){
+		//std::cerr << "FORK" << std::endl;
+		if (_request.getMethod() == "POST"){
+			//cstr_2 = new char[_request.getBody().length() + 1];
+			//strcpy(cstr_2, _request.getBody().c_str());
+			cstr_2 = _request.getBody();
+		}
+//		*strchr(buf, '\n') = '\0';
+//		std::string req_1 = buf;
+		std::string req = "REQUEST=" + _request.getMethod();
+		char *cstr = new char[req.length() + 1];
+		strcpy(cstr, req.c_str());
+		_env.getEnvArr()[0] = cstr;
+		cgiCall( socket, cstr_2.data(), location);
+		delete [] cstr;
+		return true;
+	}
+	return false;
+}
+
+bool Response::cgiCall(int fd, const char *body, Location const &location)
+{
+	pid_t	pid;
+	int     status;
+	int     reqFd;
+	char *a = (char *)"/bin/sh";
+	char *b = (char *)(location.getCgi().data());
+	char   *argv[10] = { a, b, NULL };
+
+	pid = fork();
+
+	if (pid < 0)
+		exit(-1);
+
+	else if (pid == 0){
+
+		std::ofstream out("./html/req_body_tmp.txt");
+		if (!out.is_open())
+			return (false);
+		reqFd = open("./html/req_body_tmp.txt", O_RDWR, O_CREAT, O_TRUNC);
+		write(reqFd, body, strlen(body));
+
+		dup2(reqFd, STDIN_FILENO);
+		dup2(fd, STDOUT_FILENO);
+		if (execve("/bin/sh", argv, _env.getEnvArr()) < 0){
+			std::cerr << "execute error" << std::endl;
+			exit(-1);
+		}
+		close(reqFd);
+		out.close();
+		exit(0);
+	}
+	else
+		waitpid(pid, &status, 0);
+	return (false);
 }
 
 void Response::addContentType(std::string const & filePath)
@@ -226,8 +303,7 @@ bool Response::checkLocation(std::vector<Location>::const_iterator &iter, std::s
 		isF = true;
 		if (_postfix == _filename)
 			_postfix = "";
-		// _filename = std::string(std::strrchr(reqPath.c_str(), '/'));
-		_filename = std::string(strrchr(reqPath.c_str(), '/'));
+		_filename = std::string(std::strrchr(reqPath.c_str(), '/'));
 		_postfix = _postfix.substr(0,_postfix.length() - _filename.length());
 	}
 	if (_prefix == iter->getName())
@@ -238,7 +314,7 @@ bool Response::checkLocation(std::vector<Location>::const_iterator &iter, std::s
 	return (false);
 }
 
-bool Response::GET(const int & socket)
+bool Response::GET(int & socket)
 {
 	DefaultPage page;
 	std::string url;
@@ -256,12 +332,12 @@ bool Response::GET(const int & socket)
 				_code = "405";
 				return (false);
 			}
-			if (!iter->getAutoindex() && iter->getIndex().empty() && url.empty())
+			if (!iter->getAutoindex() && iter->getIndex().empty() && url.empty() && iter->getCgi().empty())
 				_body = page.makePage("200", "Welcome to", _server.getServName());
 			else if (!iter->getCgi().empty())
 			{
-				(void)socket;
-				//TODO	callCgi(env, socket);
+				makeCgi(socket, *iter);
+				throw std::string("cgi");
 			}
 			else if (iter->getIndex().length() == 0 && iter->getAutoindex() && !isFile)
 			{
@@ -343,7 +419,7 @@ bool Response::DELETE()
 	return false;
 }
 
-bool Response::POST(const int & socket)
+bool Response::POST( int & socket)
 {
 	std::string url;
 	bool isFile = false;
@@ -364,14 +440,19 @@ bool Response::POST(const int & socket)
 			}
 			if (!iter->getCgi().empty())
 			{
-				(void)socket;
-				//TODO	callCgi(env, socket);
+				for (int i = 0; _env.getEnvArr()[i]; ++i)
+				{
+					std::cout << REDCOL << _env.getEnvArr()[i] << RESCOL << std::endl;
+				}
+				makeCgi(socket, *iter);
+				unlink("./html/req_body_tmp.txt");
+				throw std::string("cgi");
 			}
 			else if (isFile)
 			{
 				//TODO make file
 			}
-			else if (iter->getName() == "/downloads" && !_request.getBody().empty())
+			else if (iter->getName() == DOWNLOAD_DIR && !_request.getBody().empty())
 			{
 				if (_server.downloadFile(_request.getBuf().substr(_request.getBuf().find('=') + 1), url))
 				{
@@ -387,6 +468,12 @@ bool Response::POST(const int & socket)
 	}
 	_code = "403";
 	return false;
+}
+
+bool Response::HEAD(int &sock)
+{
+	_body = ""; //TODO is it right?
+	return (GET(sock));
 }
 
 

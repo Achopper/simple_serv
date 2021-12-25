@@ -1,15 +1,14 @@
 
-// #include "../inc/Client.hpp"
-// #include "../inc/Response.hpp"
+
 #include "../inc/Core.hpp"
 
 Client::Client (Server const & server, pollfd* set)
 : 	_server(server),
 	_setFd(set),
-	_body(""),
+//	_body(""),
 	_req(""),
 	// _connectTime (std::time(nullptr)),
-	_connectTime (time(nullptr)),
+	_connectTime (std::time(nullptr)),
 	_finishReadReq(false)
 {
 	_request = Request();
@@ -32,7 +31,7 @@ Client &Client::operator=(const Client &obj)
 	{
 		_server = obj._server;
 		_setFd = obj._setFd;
-		_body = obj._body;
+//		_body = obj._body;
 		_req = obj._req;
 		_connectTime = obj._connectTime;
 		_finishReadReq = obj._finishReadReq;
@@ -47,10 +46,10 @@ void Client::setReq(std::string const & req)
 	_req = req;
 }
 
-void Client::setBody(const std::string &body)
-{
-	_body = body;
-}
+//void Client::setBody(const std::string &body)
+//{
+//	_body = body;
+//}
 
 void Client::setSetFd( pollfd  *setFd )
 {
@@ -59,8 +58,7 @@ void Client::setSetFd( pollfd  *setFd )
 
 void Client::setConnTime()
 {
-	// _connectTime = std::time(nullptr);
-	_connectTime = time(nullptr);
+	_connectTime = std::time(nullptr);
 }
 
 void Client::setResponse(Response &response)
@@ -68,10 +66,10 @@ void Client::setResponse(Response &response)
 	_response = response;
 }
 
-std::string Client::getBody() const
-{
-	return (_body);
-}
+//std::string Client::getBody() const
+//{
+//	return (_body);
+//}
 
 std::string Client::getReq(void) const
 {
@@ -144,6 +142,8 @@ void Client::makeResponse()
 		_response.DELETE();
 	else if (_request.getMethod() == "POST")
 		_response.POST(_setFd->fd);
+	else if (_request.getMethod() == "HEAD")
+		_response.HEAD(_setFd->fd);
 	else
 		_response.setCode("405");
 	_response.fillResponse();
@@ -170,4 +170,4 @@ void	Client::setRequest(std::string const &req)
 	
 }
 
-Env&	Client::getEnv(){return _env;}
+//Env&	Client::getEnv(){return _env;}

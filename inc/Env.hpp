@@ -1,15 +1,17 @@
 #ifndef ENV_HPP
 #define ENV_HPP
 
-#include "Core.hpp"
+#include "serv_includes.hpp"
 
 class Env
 {
 	public:
-		Env();
+		Env												( void );
 		~Env();
 		Env(Env const &other);
 		Env &operator=(Env const &other);
+public:
+
 
 		std::map<std::string, std::string>	&getEnvMap();
 		char								**getEnvArr();

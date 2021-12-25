@@ -9,7 +9,7 @@
 
 #include "Env.hpp"
 #include "Response.hpp"
-#include <map>
+
 
 class Client
 {
@@ -18,13 +18,13 @@ private:
 
 	Server								_server;
 	pollfd								*_setFd;
-	std::string							_body; //TODO ?
+//	std::string							_body; //TODO ?
 	std::string 						_req;
 	std::time_t 						_connectTime;
 	bool 								_finishReadReq;
 	Response							_response;
 	Request								_request;
-	Env									_env;
+//	Env									_env;
 
 public:
 
@@ -38,18 +38,17 @@ public:
 
 public:
 
-	void 	setBody						( std::string const & body );
+//	void 	setBody						( std::string const & body );
 	void 	setReq						( std::string const & req );
 	void 	setSetFd					( pollfd  *setFd );
 	void 	setConnTime					( void );
 	void 	setFinishReadReq 			( bool isFinish );
 	void 	setResponse					( Response & response );
 
-	std::string getBody					( void ) const;
+//	std::string getBody					( void ) const;
 	std::string getReq					( void ) const;
 	pollfd* getSetFd					( void ) const;
-	// std::time_t getConTime				( void ) const;
-	time_t getConTime					( void ) const;
+	std::time_t getConTime				( void ) const;
 	bool	getFinishReadReq 			( void ) const;
 	const Server & getServer			( void ) const;
 	Response * getResponse				( void );
@@ -65,7 +64,7 @@ public:
 
 public:
 	
-	Env&					getEnv();
+	//Env&					getEnv();
 
 };
 

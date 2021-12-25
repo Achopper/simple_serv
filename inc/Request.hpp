@@ -3,9 +3,6 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include <map>
-#include <string>
-#include <vector>
 
 class Request
 {
@@ -15,7 +12,9 @@ private:
 	bool									_isFirstLineSet;
 	bool									_isHeadersEnd;
 	bool									_isBodyEnd;
+	public:
 	bool									_isRequestEnd;
+private:
 	bool									_isChunked;
 	bool									_readingBodySize;
 	bool									_readingBody;

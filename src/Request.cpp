@@ -252,10 +252,11 @@ void	Request::parseReq(std::string const & req){
 				setChunkedBody();
 		}
 
-		if ((_method == "GET" && _isHeadersEnd) || ((_method == "POST" || _method == "DELETE") && _isBodyEnd))
+		if (((_method == "GET" || _method == "HEAD") && _isHeadersEnd)
+		|| ((_method == "POST" || _method == "DELETE") && _isBodyEnd))
 		{	
 			_isRequestEnd = true;
-			if (_method == "GET")
+			if (_method == "GET" || _method == "HEAD")
 				break;
 		}
 		endLine = _buf.find("\r\n") ;
@@ -266,7 +267,7 @@ void	Request::parseReq(std::string const & req){
 }
 
 void	Request::checkMethod(std::string &method){
-	if (method != "POST" && method != "GET" && method != "DELETE")
+	if (method != "POST" && method != "GET" && method != "DELETE" && method != "HEAD")
 	{
 		std::string msg = "Wrong method";
 		_errCode = "405";

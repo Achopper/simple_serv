@@ -4,9 +4,10 @@ Env::Env():_arrRows(0){}
 
 Env::~Env(){
 	
-    for (size_t i = 0; i < _arrRows; i++)
-        delete[] _envArr[i];
-    // delete[] _envArr;
+    // for (size_t i = 0; i < _arrRows; i++)
+    //     delete[] _envArr[i];
+    // delete [] _envArr;
+	// _envArr = 0;
 }
 
 Env::Env(Env const &other){
@@ -51,45 +52,56 @@ void	Env::addEnvToMap(){
 		_envMap[first] = second;
 	}
 }
-void	Env::setEnvArr(){
 
+size_t	&Env::getArrRows()
+{
+	return _arrRows;
+}
+
+char	**Env::makeEnvArr(){
+
+	char **envArr ;
 	addEnvToMap();
-    _envArr = new char *[_envMap.size() + 1];
-    _envArr[_envMap.size()] = NULL;
+
+    envArr = new char *[_envMap.size() + 1];
+	if (!envArr)
+		throw std::exception();
+    envArr[_envMap.size()] = NULL;
     std::map<std::string, std::string>::const_iterator it = _envMap.begin();
     for (; it != _envMap.end(); ++it, ++_arrRows)
 	{
-        _envArr[_arrRows] = strdup((it->first + "=" + it->second).c_str());
+        envArr[_arrRows] = strdup((it->first + "=" + it->second).c_str());
 	}
 	// print arr
 	for(size_t k = 0; k < _arrRows ; ++k)
 	{
-		for(size_t j = 0; j < strlen(_envArr[k]); ++j)
-			std::cout << _envArr[k][j];
+		for(size_t j = 0; j < strlen(envArr[k]); ++j)
+			std::cout << envArr[k][j];
     	std::cout << std::endl;
-	}	
+	}
+	return envArr;
 }
 
-// void Env::setEnvArr(){
+// void	Env::setEnvArr(){
 
 // 	addEnvToMap();
-//     char	** envArr = new char *[_envMap.size()];//384 1 leak
-//     // _envArr = new char *[_envMap.size() + 1];//400 1 leak
-//     envArr[_envMap.size()] = NULL;
+
+//     _envArr = new char *[_envMap.size() + 1];
+// 	if (!_envArr)
+// 		throw std::exception();
+//     _envArr[_envMap.size()] = NULL;
 //     std::map<std::string, std::string>::const_iterator it = _envMap.begin();
 //     for (; it != _envMap.end(); ++it, ++_arrRows)
 // 	{
-//         envArr[_arrRows] = strdup((it->first + "=" + it->second).c_str());
+//         _envArr[_arrRows] = strdup((it->first + "=" + it->second).c_str());
 // 	}
-
 // 	// print arr
 // 	for(size_t k = 0; k < _arrRows ; ++k)
 // 	{
-// 		for(size_t j = 0; j < strlen(envArr[k]); ++j)
-// 			std::cout << envArr[k][j];
+// 		for(size_t j = 0; j < strlen(_envArr[k]); ++j)
+// 			std::cout << _envArr[k][j];
 //     	std::cout << std::endl;
 // 	}	
-// 	_envArr = envArr;
 // }
 
 // void	Env::addServEnvToMap(Server &server){

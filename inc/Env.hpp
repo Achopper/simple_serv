@@ -13,15 +13,18 @@ class Env
 
 		std::map<std::string, std::string>	&getEnvMap();
 		char								**getEnvArr();
+		size_t								&getArrRows();
 
 		void								setEnvArr();
+		
 		// void								addServEnvToMap(Server &server);
 		void								addHttpEnvToMap(Request &request);
 		void								addEnvToMap();
+		char								**makeEnvArr();
 
 	private:
+
 		std::map<std::string, std::string>	_envMap;
-		// std::string	;
 		char								**_envArr;
 		size_t								_arrRows;
 };

@@ -181,8 +181,13 @@ void Core::mainLoop() {
 
 					try //TODO mb del
 					{
-						cli_it->getResponse()->getEnv().addHttpEnvToMap(cli_it->getRequest());
-						cli_it->getResponse()->getEnv().setEnvArr();
+
+						cli_it->getEnv().addHttpEnvToMap(cli_it->getRequest());
+						// cli_it->getEnv().setEnvArr();
+						char **envArr = cli_it->getEnv().makeEnvArr();
+						for (size_t i = 0; i < cli_it->getEnv().getArrRows(); i++)
+							delete[] envArr[i];
+						delete [] envArr;
 					}
 					catch(const std::exception& e)
 					{

@@ -11,7 +11,7 @@ Env::Env(Env const &other){
 	*this = other;
 }
 Env &Env::operator=(const Env &other){
-	
+
 	if (this != &other)
 	{
 		_envMap = other._envMap;
@@ -105,7 +105,7 @@ char	**Env::makeEnvArr(){
 // 		for(size_t j = 0; j < strlen(_envArr[k]); ++j)
 // 			std::cout << _envArr[k][j];
 //     	std::cout << std::endl;
-// 	}	
+// 	}
 // }
 
 // void	Env::addServEnvToMap(Server &server){
@@ -145,6 +145,9 @@ void	Env::addHttpEnvToMap(Request &request){
 	_envMap["CONTENT_TYPE"] = request.getHeadersMap()["Content-Type"];
 	_envMap["QUERY_STRING"] = request.getQueryString();
 	_envMap["REQUEST"] = request.getMethod();
+	_envMap["URL"] = request.getUrl();
+
+
 
 	// for (std::map<std::string, std::string>::iterator it = _envMap.begin(); it != _envMap.end(); ++it)
 	// 	std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;

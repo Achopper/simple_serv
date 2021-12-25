@@ -39,7 +39,7 @@ public class Java {
                 "<head>" +
                 "<body>" +
                 "<h2 align=center>Choose your zodiac sign</h2>" +
-                "<form align=center name = \"myform\" action=\"http://" + host +  "/horoscope\" method=\"POST\">" +
+                "<form align=center name = \"myform\" action=\"http://" + host +  "/cgi-bin/horoscope\" method=\"POST\">" +
                "<button type=\"submit\" name=\"AQUARIUS\" value=\"AQUARIUS\"><img src=\"https://cdn.pixabay.com/photo/2015/05/09/07/32/aquarius-759383__340.jpg\" border=\"0\" alt=\"SomeAlternateText\" style=\"width: 150px;\"></button>" + "       " +
                 "<button type=\"submit\" name=\"PISCES\" value=\"PISCES\"><img src=\"https://cdn.pixabay.com/photo/2015/05/09/07/32/fish-759384__340.jpg\" border=\"0\" alt=\"SomeAlternateText\" style=\"width: 150px;\"></button>" + "       " +
                 "<button type=\"submit\" name=\"ARIES\" value=\"ARIES\"><img src=\"https://cdn.pixabay.com/photo/2015/05/09/07/32/aries-759382__340.jpg\" border=\"0\" alt=\"SomeAlternateText\" style=\"width: 150px;\"></button>" + "       " +

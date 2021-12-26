@@ -1,6 +1,4 @@
-#include "../inc/Core.hpp"
 #include "../inc/Env.hpp"
-
 
 Env::Env():_arrRows(0){}
 
@@ -86,28 +84,6 @@ char	**Env::makeEnvArr(){
 	return envArr;
 }
 
-// void	Env::setEnvArr(){
-
-// 	addEnvToMap();
-
-//     _envArr = new char *[_envMap.size() + 1];
-// 	if (!_envArr)
-// 		throw std::exception();
-//     _envArr[_envMap.size()] = NULL;
-//     std::map<std::string, std::string>::const_iterator it = _envMap.begin();
-//     for (; it != _envMap.end(); ++it, ++_arrRows)
-// 	{
-//         _envArr[_arrRows] = strdup((it->first + "=" + it->second).c_str());
-// 	}
-// 	// print arr
-// 	for(size_t k = 0; k < _arrRows ; ++k)
-// 	{
-// 		for(size_t j = 0; j < strlen(_envArr[k]); ++j)
-// 			std::cout << _envArr[k][j];
-//     	std::cout << std::endl;
-// 	}
-// }
-
 // void	Env::addServEnvToMap(Server &server){
 	// _envMap["AUTH_TYPE"] = server.get...();
 	// _envMap["GETAWAY_INTERFACE"] = server.get...();
@@ -125,11 +101,6 @@ char	**Env::makeEnvArr(){
 	// _envMap["SCRIPT_NAME"] = server.get...();
 	// _envMap["SCRIPT_FILENAME"] = server.get...();
 
-// // Специальные переменные сервера Apache:
-// // 	DOCUMENT_ROOT
-// // 	SERVER_ADMIN
-// // 	SERVER_SIGNATURE
-// }
 void	Env::addHttpEnvToMap(Request &request){
 	_envMap["HTTP_HOST"] = request.getHeadersMap()["Host"];
 	_envMap["HTTP_ACCEPT"] = request.getHeadersMap()["Accept"];
@@ -147,10 +118,6 @@ void	Env::addHttpEnvToMap(Request &request){
 	_envMap["REQUEST"] = request.getMethod();
 	_envMap["URL"] = request.getUrl();
 
-
-
-	// for (std::map<std::string, std::string>::iterator it = _envMap.begin(); it != _envMap.end(); ++it)
-	// 	std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;
 }
 
 void Env::setServer(Server const *server)

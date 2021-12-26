@@ -1,7 +1,6 @@
 
 
 #include "../inc/Response.hpp"
-#include <cstring>
 
 
 std::map<std::string, std::string> Response::setStatusCode()
@@ -465,30 +464,37 @@ bool Response::POST( int & socket)
 		if (checkLocation(iter, _request.getUrl(), url, isFile))
 		{
 			_maxLen = iter->getClientSize();
-			if (_request.getBody().length() > _maxLen)
+			if (!iter->getPathToRedir().empty())
 			{
-				_code = "413";
-				return (false);
+				makeRedirect(loclist, iter, url);
+				_code = "301";
 			}
 			if (!iter->getMethods()[_request.getMethod()])
 			{
 				_code = "405";
 				return (false);
 			}
-			if (!iter->getPathToRedir().empty())
+			if (_request.getBody().length() > _maxLen)
 			{
-				makeRedirect(loclist, iter, url);
-				_code = "301";
+				_code = "413";
+				return (false);
+
+			}
+//			else if (isFile)
+//			{
+//				_code = "403";
+//				return (false);
+//			}
+			else if (_request.getBody().empty())
+			{
+				_code = "200";
+				return (true);
 			}
 			if (!iter->getCgi().empty())
 			{
 				makeCgi(socket, *iter);
-				unlink("./html/req_body_tmp.txt");
+				//unlink("./html/req_body_tmp.txt");
 				throw std::string("cgi");
-			}
-			else if (isFile)
-			{
-				//TODO make file
 			}
 			else if (iter->getName() == DOWNLOAD_DIR && !_request.getBody().empty())
 			{
@@ -510,7 +516,6 @@ bool Response::POST( int & socket)
 
 bool Response::HEAD(int &sock)
 {
-	_body = ""; //TODO is it right?
 	return (GET(sock));
 }
 

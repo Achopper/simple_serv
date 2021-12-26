@@ -1,7 +1,5 @@
 
-// #include "../inc/Request.hpp"
-#include "../inc/Core.hpp"
-#include "../inc/serv_includes.hpp"
+#include "../inc/Request.hpp"
 
 Request::Request ( void )
 {
@@ -71,6 +69,8 @@ void	Request::setQueryString(std::string& str, size_t &findQ){
 void	Request::setBody(){
 
 	checkBodyHeder();
+	if	(_isHeadersEnd && _buf.empty())
+		_isBodyEnd = true;
 	for ( std::string::iterator it=_buf.begin(); it!=_buf.end() && _bodySize; ++it)
 	{
 		_body += *it ;
@@ -303,6 +303,12 @@ void	Request::checkBodyHeder(){
 	if (_headersMap[сonLen].empty())
 	{
 		std::cout << "!!!!!!!!! no сonLen" << std::endl;
+		_errCode = "400";
 		throw std::exception();
 	}
+}
+
+void Request::setReqEnd(bool isTrue)
+{
+	_isRequestEnd = isTrue;
 }

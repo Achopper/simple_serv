@@ -18,13 +18,11 @@ private:
 
 	Server								_server;
 	pollfd								*_setFd;
-//	std::string							_body; //TODO ?
 	std::string 						_req;
 	std::time_t 						_connectTime;
 	bool 								_finishReadReq;
 	Response							_response;
 	Request								_request;
-//	Env									_env;
 
 public:
 
@@ -38,14 +36,12 @@ public:
 
 public:
 
-//	void 	setBody						( std::string const & body );
 	void 	setReq						( std::string const & req );
 	void 	setSetFd					( pollfd  *setFd );
 	void 	setConnTime					( void );
 	void 	setFinishReadReq 			( bool isFinish );
 	void 	setResponse					( Response & response );
 
-//	std::string getBody					( void ) const;
 	std::string getReq					( void ) const;
 	pollfd* getSetFd					( void ) const;
 	std::time_t getConTime				( void ) const;
@@ -61,11 +57,6 @@ public:
 	
 	void					setRequest	( std::string const & req );
 	Request&				getRequest	( void );
-
-public:
-	
-	//Env&					getEnv();
-
 };
 
 std::vector<std::string> split2			(const std::string& str, const std::string& delim) ;

@@ -5,8 +5,6 @@
 Core::Core(Config & config)
 {
 	memset (&_fdset, -1, sizeof(_fdset));
-//	for (int i = 0; i < OPEN_MAX; ++i)
-//		_fdset[i].fd = -1;
 	_servSize = config.getServCount();
 	_servers = config.getServers();
 }
@@ -37,7 +35,7 @@ bool Core::acceptClientConnect(std::vector<Server>::iterator& iterator, nfds_t& 
 	for (int j = static_cast<int>(num); j < FOPEN_MAX + 1; ++j) {
 		if (j == FOPEN_MAX) {
 			std::cerr << "Can't serve more clients. Try again later.." << std::endl;
-			break; //TODO exit?
+			break;
 		}
 		if (_fdset[j].fd < 0) {
 			_fdset[j].fd = newSock;
@@ -185,18 +183,6 @@ void Core::mainLoop() {
 			if (cli_it->getFinishReadReq())
 			{
 #if DEBUG_MODE > 0
-
-//				std::cout << GREENCOL"Client " << cli_it->getSetFd()->fd << " send"  << " revent is " <<
-//					cli_it->getSetFd()->revents << RESCOL << std::endl;
-//					 std::cout << GREENCOL << "Full req of client " << cli_it->getSetFd()->fd
-//					<< " is: " << std::endl
-//					 << cli_it->getRequest().getMethod()  << " "
-//					 << cli_it->getRequest().getUrl() << " "
-//					 << cli_it->getRequest().getHttpVersion() << std::endl;
-//				for (std::map<std::string,std::string>::iterator it = cli_it->getRequest().getHeadersMap().begin();
-//				it !=  cli_it->getRequest().getHeadersMap().end(); ++it)
-//				std::cout << it->first + ": " + it->second << std::endl;
-//				std::cout << REDCOL << "Body is: " << cli_it->getRequest().getBody() << RESCOL << std::endl;
 				std::cout << REDCOL << fullReq << RESCOL << std::endl;
 				fullReq.erase();
 #endif
@@ -215,7 +201,4 @@ void Core::mainLoop() {
 	}
 }
 
-//TODO fix cli_size in POST
-//TODO fix wrong methot exeption code
-  
 

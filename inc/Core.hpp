@@ -6,8 +6,6 @@
 #include "serv_includes.hpp"
 #include "Config.hpp"
 #include "Client.hpp"
-//#include "Response.hpp"
-//#include "Env.hpp"
 #include "Server.hpp"
 
 class Core
@@ -16,7 +14,6 @@ private:
 
 	uint32_t 							_servSize;
 	std::vector<int> 					_sockfd;
-	// pollfd 							_fdset[OPEN_MAX];
 	pollfd 								_fdset[FOPEN_MAX];
 	std::list<Client> 					_clientList;
 	std::vector<Server>					_servers;

@@ -22,10 +22,11 @@ while (tail != msg_end && *tail != '\r') ++tail;
 const char *colon = memchr(head, tail, ':');
 
 
-POST /cgi-bin/horoscope HTTP/1.1
+POST /cgi-bin/horoscope.a HTTP/1.1
 Content-Type: text/plain
 Connection: keep-alive
 Content-Length: 17
+
 
 AQUARIUS=AQUARIUS
 

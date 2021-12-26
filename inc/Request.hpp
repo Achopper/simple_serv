@@ -2,6 +2,7 @@
 
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
+#include "../inc/serv_includes.hpp"
 
 
 class Request
@@ -12,9 +13,7 @@ private:
 	bool									_isFirstLineSet;
 	bool									_isHeadersEnd;
 	bool									_isBodyEnd;
-	public:
 	bool									_isRequestEnd;
-private:
 	bool									_isChunked;
 	bool									_readingBodySize;
 	bool									_readingBody;
@@ -53,6 +52,7 @@ public:
 	void									setQueryString(std::string &str, size_t &findQ);
 	void									setHeadersMap(size_t &endLine, size_t &endHeaders);
 	void									setFirstLine(size_t &endLine);
+	void 									setReqEnd(bool isTrue);
 
 	std::string								getUri();
 	std::string								getUrl();

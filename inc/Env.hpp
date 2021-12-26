@@ -2,6 +2,8 @@
 #define ENV_HPP
 
 #include "serv_includes.hpp"
+#include "Request.hpp"
+#include "Server.hpp"
 
 class Env
 {

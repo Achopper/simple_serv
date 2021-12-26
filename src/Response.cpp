@@ -480,11 +480,18 @@ bool Response::POST( int & socket)
 				return (false);
 
 			}
-//			else if (isFile)
-//			{
-//				_code = "403";
-//				return (false);
-//			}
+			else if (isFile)
+			{
+				std::ifstream open;
+				open.open(url);
+				if (!open.is_open())
+				{
+					_code = "403";
+					return (false);
+				}
+				else
+					open.close();
+			}
 			else if (_request.getBody().empty())
 			{
 				_code = "200";
@@ -493,7 +500,7 @@ bool Response::POST( int & socket)
 			if (!iter->getCgi().empty())
 			{
 				makeCgi(socket, *iter);
-				//unlink("./html/req_body_tmp.txt");
+				unlink("./html/req_body_tmp.txt");
 				throw std::string("cgi");
 			}
 			else if (iter->getName() == DOWNLOAD_DIR && !_request.getBody().empty())

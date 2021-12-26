@@ -239,18 +239,12 @@ void	Request::parseReq(std::string const & req){
 
 	while(endLine != static_cast<size_t>(-1) && !_isBodyEnd)
 	{
-	//	std::cout << req << std::endl;
-//		if (_buf == "\r\n")
-//			return;
 		if (!_isFirstLineSet)
 			setFirstLine(endLine);
 		else if ((_isFirstLineSet && !_isHeadersEnd))
 		{
 			if (_buf == "\r\n")
-			{
 				_isHeadersEnd = true;
-				//_isBodyEnd = true;
-			}
 			else
 			{
 				setHeadersMap(endLine, endHeaders);
@@ -279,8 +273,6 @@ void	Request::parseReq(std::string const & req){
 		endLine = _buf.find("\r\n") ;
 		endHeaders = _buf.find("\r\n\r\n") ;
 	}
-	// for (std::map<std::string, std::string>::iterator it = _headersMap.begin(); it != _headersMap.end(); ++it)
-	// std::cout << "|" << it->first << "|" << " : " << "|" << it->second << "|" << std::endl;
 }
 
 void	Request::checkMethod(std::string &method){

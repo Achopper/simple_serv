@@ -3,7 +3,7 @@
 #ifndef SERV_INCLUDES_HPP
 #define SERV_INCLUDES_HPP
 
-#define DEBUG_MODE 1
+#define DEBUG_MODE 0
 #define REDCOL "\33[31m"
 #define RESCOL "\33[00m"
 #define GREENCOL "\33[32m"

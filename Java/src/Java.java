@@ -135,7 +135,7 @@ public class Java {
         }
 
         try {
-            File file = new File("../../../../html/req_body_tmp.txt");
+            File file = new File("../html/req_body_tmp.txt");
             FileReader fr = new FileReader(file);
             BufferedReader reader = new BufferedReader(fr);
             String line = reader.readLine();

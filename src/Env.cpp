@@ -74,13 +74,6 @@ char	**Env::makeEnvArr(){
 	{
         envArr[_arrRows] = strdup((it->first + "=" + it->second).c_str());
 	}
-
-	for(size_t k = 0; k < _arrRows ; ++k)
-	{
-		for(size_t j = 0; j < strlen(envArr[k]); ++j)
-			std::cout << envArr[k][j];
-    	std::cout << std::endl;
-	}
 	return envArr;
 }
 

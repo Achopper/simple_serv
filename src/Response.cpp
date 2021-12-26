@@ -183,10 +183,8 @@ bool Response::cgiCall(int fd, const char *body, Location const &location, char 
 		std::string url = envArr[i];
 		size_t pos = url.find("URL");
 		if (pos != std::string::npos){
-			std::cerr << url << std::endl;
 			pos = url.find("/", 5);
 			cgi = url.substr(pos + 1);
-			std::cerr << cgi << std::endl;
 		}
 		i++;
 	}
@@ -371,6 +369,15 @@ bool Response::GET(int & socket)
 				_body = page.makePage("200", "Welcome to", _server.getServName());
 			else if (!iter->getCgi().empty())
 			{
+				std::ifstream open;
+				open.open(url);
+				if (!open.is_open())
+				{
+					_code = "404";
+					return (false);
+				}
+				else
+					open.close();
 				makeCgi(socket, *iter);
 				throw std::string("cgi");
 			}
@@ -486,7 +493,7 @@ bool Response::POST( int & socket)
 				open.open(url);
 				if (!open.is_open())
 				{
-					_code = "403";
+					_code = "405";
 					return (false);
 				}
 				else

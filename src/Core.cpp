@@ -102,7 +102,8 @@ bool Core::sendResponce(std::list<Client>::iterator &it, nfds_t& num)
 		throw CoreException();
 	}
 #if DEBUG_MODE > 0
-	std::cout << GREENCOL << "client " << it->getSetFd()->fd << " send  " << s << RESCOL << std::endl;
+	std::cout << GREENCOL << "client " << it->getSetFd()->fd << " send  " << s << RESCOL << std::endl
+	<< "Responce: \n" << it->getResponse()->getResp() << std::endl;
 #endif
 	it->deleteClient();
 	it = _clientList.erase(it);
@@ -149,6 +150,7 @@ bool Core::initSocets()
 void Core::mainLoop() {
     nfds_t numfds = _servSize;
 	int pollRet;
+	std::string fullReq;
 
 	while (true) {
 		if ((pollRet = poll(_fdset, numfds + 1, TIMEOUT)) < 0)
@@ -168,6 +170,7 @@ void Core::mainLoop() {
 				if (!cli_it->getFinishReadReq() )
 				{
 					readRequest(cli_it, numfds);
+					fullReq.append(cli_it->getReq());
 					cli_it->setRequest(cli_it->getReq());
 				}
 				if (!cli_it->getRequest().getIsRequestEnd())
@@ -183,18 +186,19 @@ void Core::mainLoop() {
 			{
 #if DEBUG_MODE > 0
 
-				std::cout << GREENCOL"Client " << cli_it->getSetFd()->fd << " send"  << " revent is " <<
-					cli_it->getSetFd()->revents << RESCOL << std::endl;
-					 std::cout << GREENCOL << "Full req of client " << cli_it->getSetFd()->fd
-					<< " is: " << std::endl
-					 << cli_it->getRequest().getMethod()  << " "
-					 << cli_it->getRequest().getUrl() << " "
-					 << cli_it->getRequest().getHttpVersion() << std::endl;
-				for (std::map<std::string,std::string>::iterator it = cli_it->getRequest().getHeadersMap().begin();
-				it !=  cli_it->getRequest().getHeadersMap().end(); ++it)
-				std::cout << it->first + ": " + it->second << std::endl;
-				std::cout << REDCOL << "Body is: " << cli_it->getRequest().getBody() << RESCOL << std::endl;
-
+//				std::cout << GREENCOL"Client " << cli_it->getSetFd()->fd << " send"  << " revent is " <<
+//					cli_it->getSetFd()->revents << RESCOL << std::endl;
+//					 std::cout << GREENCOL << "Full req of client " << cli_it->getSetFd()->fd
+//					<< " is: " << std::endl
+//					 << cli_it->getRequest().getMethod()  << " "
+//					 << cli_it->getRequest().getUrl() << " "
+//					 << cli_it->getRequest().getHttpVersion() << std::endl;
+//				for (std::map<std::string,std::string>::iterator it = cli_it->getRequest().getHeadersMap().begin();
+//				it !=  cli_it->getRequest().getHeadersMap().end(); ++it)
+//				std::cout << it->first + ": " + it->second << std::endl;
+//				std::cout << REDCOL << "Body is: " << cli_it->getRequest().getBody() << RESCOL << std::endl;
+				std::cout << REDCOL << fullReq << RESCOL << std::endl;
+				fullReq.erase();
 #endif
 				sendResponce(cli_it, numfds);
 			}

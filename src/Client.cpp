@@ -171,7 +171,7 @@ void	Client::setRequest(std::string const &req)
 		std::cout << "КОД!!!!!!!!!!!!  "  << _request.getErrCode() << std::endl;
 		_request._isRequestEnd = true;
 		_response.setCode(_request.getErrCode());
-		// std::cerr << e.what() << '\n';
+		 std::cerr << e.what() << '\n';
 	}
 	
 }

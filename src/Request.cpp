@@ -87,7 +87,7 @@ void	Request::setChunkedBody(){
 		{
 			for ( std::string::iterator it=_buf.begin(); *it!='\r'; ++it)
 				str += *it ;
-			_bodySize = static_cast<size_t>(stoll(str));//atoi(c_str(str))
+			_bodySize = static_cast<size_t>(atoi(str.c_str()));//atoi(c_str(str))
 			if (_bodySize == 0)
 			{
 				_isBodyEnd = true;
@@ -117,7 +117,7 @@ void	Request::setChunkedBody(){
 void	Request::setBodySize(){
 	std::string сonLen("Content-Length");
 	if (!_headersMap[сonLen].empty())
-		_bodySize = static_cast<size_t>(stoll(_headersMap[сonLen]));//С++11
+		_bodySize = static_cast<size_t>(std::atoi(_headersMap[сonLen].c_str()));//С++11
 }
 void	Request::setIsChunked(){
 	std::string transEncod("Transfer-Encoding");
@@ -146,7 +146,7 @@ void	Request::setFirstLine(size_t &endLine){
 	checkMethod(firstLine[0]);
 	setMethod(firstLine[0]) ;
 
-	size_t findQ = firstLine[1].find("?");
+	size_t findQ = firstLine[1].find('?');
 	setUri(firstLine[1]) ;
 	setUrl(firstLine[1], findQ) ;
 	setQueryString(firstLine[1], findQ) ;
@@ -254,8 +254,11 @@ void	Request::parseReq(std::string const & req){
 			else
 			{
 				setHeadersMap(endLine, endHeaders);
-				setBodySize();
-				setIsChunked();
+				if (_method == "POST" || _method == "DELETE")
+				{
+					setBodySize();
+					setIsChunked();
+				}
 			}
 		}
 		if (_isHeadersEnd && (_method == "POST" || _method == "DELETE"))
@@ -299,7 +302,7 @@ void	Request::checkBodyHeder(){
 	std::string сonLen("Content-Length");
 	if (_headersMap[сonLen].empty())
 	{
-		std::cout << "!!!!!!!!! no сonLen";
+		std::cout << "!!!!!!!!! no сonLen" << std::endl;
 		throw std::exception();
 	}
 }

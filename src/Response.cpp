@@ -10,6 +10,7 @@ std::map<std::string, std::string> Response::setStatusCode()
 	res.insert(std::pair<std::string, std::string>("100", "Continue"));
 	res.insert(std::pair<std::string, std::string>("200", "OK"));
 	res.insert(std::pair<std::string, std::string>("201", "Created"));
+	res.insert(std::pair<std::string, std::string>("204", " No Content"));
 	res.insert(std::pair<std::string, std::string>("301", "Moved Permanently"));
 
 	res.insert(std::pair<std::string, std::string>("400", "Bad Request"));
@@ -488,7 +489,6 @@ bool Response::POST( int & socket)
 				else
 					break;
 			}
-			_body = _request.getBody();
 			iter->getPathToRedir().empty() ? _code = "200" : "red";
 			return true;
 		}

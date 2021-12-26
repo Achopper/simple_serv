@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd Java/out/production/Java
-java Java
+cd cgi-bin
+java $1

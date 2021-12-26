@@ -14,6 +14,7 @@ DefaultPage::~DefaultPage()
 std::string DefaultPage::makePage(const std::string &errorCode, std::string const & errmsg,
 								   std::string const &servVer)
 {
+
 	std::string res = "<!DOCTYPE html>\n";
 	res.append("<html lang=\"en\">\n");
 	res.append("<head>\n");
@@ -25,6 +26,8 @@ std::string DefaultPage::makePage(const std::string &errorCode, std::string cons
 	res.append("<body bgcolor=\"PowderBlue\">\n");
 	res.append("<center>\n");
 	res.append("<h1>" + errorCode + " " + errmsg + "</h1>\n");
+	if (errorCode == "405")
+		res.append("<h2>" + servVer + " allow only GET POST HEAD DELETE </h1>\n");
 	res.append("</center>\n");
 	res.append("<hr>\n");
 	res.append("<center>" + servVer + "</center>\n");

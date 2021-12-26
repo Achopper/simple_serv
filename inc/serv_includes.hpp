@@ -9,9 +9,12 @@
 #define GREENCOL "\33[32m"
 
 #define PROT "HTTP/1.1"
+//Define download directory && cgi location name
+#define DOWNLOAD_DIR "/downloads"
+#define CGI_NAME "/cgi-bin"
 #define TIMEOUT -1
-#define CLI_TIMEOUT_SEC 15
-#define DEF_CLI_MAX_BDY_SZ 16*1024
+#define CLI_TIMEOUT_SEC 30
+#define DEF_CLI_MAX_BDY_SZ 1000*1024
 
 
 typedef struct pollfd pollfd;
@@ -23,15 +26,17 @@ typedef struct sockaddr_storage sockaddr_storage;
 #include <vector>
 #include <map>
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <string>
 
 #include <sys/fcntl.h>
 #include <sys/poll.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <machine/types.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <dirent.h>
 

@@ -1,3 +1,4 @@
+
 a.out
 cmake-build-debug
 CMakeLists.txt
@@ -5,3 +6,8 @@ CMakeLists.txt
 supaDupaServ
 .idea
 tkn.txt
+/YoupiBanane
+/html/directory
+tester
+.DS_Store
+.vscode

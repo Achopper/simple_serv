@@ -1,13 +1,10 @@
 
 #include "../inc/Core.hpp"
-
-
+#include <cstring>
 
 Core::Core(Config & config)
 {
-	memset (&_fdset, 0, sizeof(_fdset));
-	for (int i = 0; i < OPEN_MAX; ++i)
-		_fdset[i].fd = -1;
+	memset (&_fdset, -1, sizeof(_fdset));
 	_servSize = config.getServCount();
 	_servers = config.getServers();
 }
@@ -35,15 +32,16 @@ bool Core::acceptClientConnect(std::vector<Server>::iterator& iterator, nfds_t& 
 	}
 	iterator->getServerFd()->revents &= ~POLLRDNORM;
 	fcntl(newSock, F_SETFL , O_NONBLOCK);
-	for (int j = static_cast<int>(num); j < OPEN_MAX + 1; ++j) {
-		if (j == OPEN_MAX) {
+	for (int j = static_cast<int>(num); j < FOPEN_MAX + 1; ++j) {
+		if (j == FOPEN_MAX) {
 			std::cerr << "Can't serve more clients. Try again later.." << std::endl;
-			break; //TODO exit?
+			break;
 		}
 		if (_fdset[j].fd < 0) {
 			_fdset[j].fd = newSock;
 			_fdset[j].events = (POLLRDNORM | POLLOUT);
 			Client client(*iterator, &_fdset[j]);
+			client.getResponse()->setServer(*iterator);
 			_clientList.push_back(client);
 			num++;
 			break;
@@ -56,7 +54,6 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 {
 	ssize_t valread;
 	char buf[BUFSIZ] = {0};
-
 
 	valread = recv(it->getSetFd()->fd, buf, DEF_CLI_MAX_BDY_SZ, 0);
 	it->setConnTime();
@@ -75,7 +72,7 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 	}
 	else if (valread > 0)
 	{
-		it->setReq(it->getReq().append(buf, static_cast<size_t>(valread)));
+		it->setReq(buf);
 #if DEBUG_MODE > 0
 		std::cout <<GREENCOL "client " << it->getSetFd()->fd << " reсive " << valread << " bytes and revent: " <<
 		it->getSetFd()->revents << RESCOL << std::endl;
@@ -88,9 +85,23 @@ void Core::readRequest(std::list<Client>::iterator &it, nfds_t& num)
 bool Core::sendResponce(std::list<Client>::iterator &it, nfds_t& num)
 {
 	ssize_t s;
-	s = send(it->getSetFd()->fd, it->getResponse()->getResp().c_str(), it->getResponse()->getResp().length(), 0);
+	try
+	{
+		it->makeResponse();
+		s = send(it->getSetFd()->fd, it->getResponse()->getResp().c_str(), it->getResponse()->getResp().length(), 0);
+	}
+	catch (std::string &cgi)
+	{
+		std::cout << GREENCOL << "That made " << cgi << " code!" << RESCOL << std::endl;
+	}
+	if (s < 0)
+	{
+		std::cout << REDCOL"Error in send: " << strerror(errno) << RESCOL << std::endl;
+		throw CoreException();
+	}
 #if DEBUG_MODE > 0
-	std::cout << GREENCOL << "client " << it->getSetFd()->fd << " send  " << s << RESCOL << std::endl;
+	std::cout << GREENCOL << "client " << it->getSetFd()->fd << " send  " << s << RESCOL << std::endl
+	<< "Responce: \n" << it->getResponse()->getResp() << std::endl;
 #endif
 	it->deleteClient();
 	it = _clientList.erase(it);
@@ -117,7 +128,6 @@ bool Core::initSocets()
 		_sockfd.push_back(sock);
 		setsockopt(_sockfd.at(i), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes);
 		fcntl(_sockfd.at(i), F_SETFL , O_NONBLOCK);
-
 		if (bind(_sockfd.at(i), (struct sockaddr *) &addr, sizeof(addr)) < 0)
 		{
 			std::cout << REDCOL"Can't bind socket: " << strerror(errno) << RESCOL << std::endl;
@@ -135,57 +145,16 @@ bool Core::initSocets()
 	return (true);
 }
 
-void testParse(std::string const & req, std::list<Client>::iterator it) //TODO test
-{
-	std::vector<std::string> splitRequest;
-	for (std::string::size_type start = 0, end = 0; start != req.length();)
-	{
-		end = req.find("\r\n", start);
-		if (end == std::string::npos)
-		{
-			splitRequest.push_back(req.substr(start, req.length()));
-			break;
-		}
-		std::string tok = req.substr(start,end - start);
-		splitRequest.push_back(tok);
-		start = end + 2;
-	}
-	for (std::string::size_type start = 0, end = 0; start != splitRequest.at(0).length();)
-	{
-		end = splitRequest.at(0).find(' ', start);
-		if (end == std::string::npos)
-		{
-			it->prot = (splitRequest.at(0).substr(start, splitRequest.at(0).length()));
-			break;
-		}
-		std::string tok = splitRequest.at(0).substr(start,end - start);
-		tok[0] == '/' ? it->path = tok : it->method = tok;
-		start = end + 1;
-	}
-	if (it->path.length() > 1 && it->path[it->path.length() - 1] == '/')
-		it->path = it->path.substr(0, it->path.length() - 1);
-
-}
-
 void Core::mainLoop() {
     nfds_t numfds = _servSize;
-    int pollRet;
+	int pollRet;
+	std::string fullReq;
 
 	while (true) {
 		if ((pollRet = poll(_fdset, numfds + 1, TIMEOUT)) < 0)
 		{
-			std::cout << REDCOL"Can't poll" << RESCOL << std::endl;
+			std::cout << REDCOL"Can't poll" << strerror(errno) << RESCOL << std::endl;
 			throw CoreException();
-		}
-		if (pollRet == 0)
-		{
-			std::cout << REDCOL"TIMEOUT at fd " << _sockfd[0] << RESCOL << std::endl;
-			_sockfd.erase(_sockfd.begin());
-			close(_fdset[0].fd);
-			_fdset[0].fd = -1;
-			if (_sockfd.empty())
-				return;
-			continue;
 		}
 		for(std::vector<Server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
 		{
@@ -197,49 +166,39 @@ void Core::mainLoop() {
 			if (cli_it->getSetFd()->revents & (POLLRDNORM | POLLERR))
 			{
 				if (!cli_it->getFinishReadReq() )
+				{
 					readRequest(cli_it, numfds);
-				std::string::size_type pos = cli_it->getReq().find("\r\n\r\n");
-				if (pos == std::string::npos)
+					fullReq.append(cli_it->getReq());
+					cli_it->setRequest(cli_it->getReq());
+				}
+				if (!cli_it->getRequest().getIsRequestEnd())
 					continue;
 				else
 				{
 					cli_it->getSetFd()->revents &= ~(POLLRDNORM | POLLERR);
 					cli_it->setFinishReadReq(true);
-					//cli_it->getSetFd()->events |= POLLOUT;
+					cli_it->getResponse()->setRequest(cli_it->getRequest());
 				}
 			}
 			if (cli_it->getFinishReadReq())
 			{
 #if DEBUG_MODE > 0
-				std::cout << GREENCOL"Client " << cli_it->getSetFd()->fd << " send"  << " revent is " <<
-					cli_it->getSetFd()->revents << RESCOL << std::endl;
-					std::cout << "Full req of client " << cli_it->getSetFd()->fd
-					<< " is: " << std::endl << cli_it->getReq() << std::endl;
+				std::cout << REDCOL << fullReq << RESCOL << std::endl;
+				fullReq.erase();
 #endif
-				testParse(cli_it->getReq(), cli_it);//TODO Test part
-				Response response(cli_it->method, *cli_it);
-				cli_it->setResponse(response);
-				cli_it->makeResponse(response);
 				sendResponce(cli_it, numfds);
 			}
-			if (!_clientList.empty() && std::difftime(std::time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
+			if (!_clientList.empty() && difftime(time(nullptr), cli_it->getConTime()) > CLI_TIMEOUT_SEC)
 			{
 #if DEBUG_MODE > 0
 				std::cout << REDCOL"Client " << cli_it->getSetFd()->fd  << " disconnected by timeout" << RESCOL <<
 						  std::endl;
 #endif
-				Response response(cli_it->method, *cli_it);
-				response.setCode("408");
-				cli_it->setResponse(response);
-				cli_it->makeResponse(response);
+				cli_it->getResponse()->setCode("408");
 				sendResponce(cli_it, numfds);
-				cli_it->deleteClient();
-				cli_it = _clientList.erase(cli_it);
 			}
 		}
 	}
 }
-
-
 
 

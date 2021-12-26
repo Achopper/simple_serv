@@ -15,6 +15,7 @@ private:
 	std::string 						_err;
 	std::vector<Server> 				_servers;
 	uint32_t 							_servCount;
+	std::map<std::string, std::string>	_ipAndPorts;
 
 public:
 

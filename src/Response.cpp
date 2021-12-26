@@ -172,8 +172,11 @@ bool Response::cgiCall(int fd, const char *body, Location const &location, char 
 	int     status;
 	int     reqFd;
 	std::string cgi;
+	std::string type;
+	std::string name;
 	char *a = (char *)"/bin/sh";
 	char *b = (char *)(location.getCgi().data());
+
 	int i = 0;
 
 	while (envArr[i] != nullptr)
@@ -189,7 +192,11 @@ bool Response::cgiCall(int fd, const char *body, Location const &location, char 
 		i++;
 	}
 
-	char   *argv[10] = { a, b, NULL };
+	size_t pos = cgi.find('.');
+	if (pos != std::string::npos) {
+		name = cgi.substr(0, pos);
+		type = cgi.substr(pos);
+	}
 
 	pid = fork();
 
@@ -207,7 +214,10 @@ bool Response::cgiCall(int fd, const char *body, Location const &location, char 
 		dup2(reqFd, STDIN_FILENO);
 		dup2(fd, STDOUT_FILENO);
 
-		if (cgi == "horoscope"){
+		if (!type.empty() && type == ".class"){
+			char * env = new char[name.length() + 1];
+			strcpy(env, name.c_str());
+			char   *argv[10] = { a, b, env };
 			if (execve(a, argv, envArr) < 0){
 				std::cerr << "execute error" << std::endl;
 				_code = "666";
@@ -215,6 +225,7 @@ bool Response::cgiCall(int fd, const char *body, Location const &location, char 
 				send(STDOUT_FILENO, _response.c_str(),_response.length(),0);
 				exit(-1);
 			}
+			delete [] env;
 		} else {
 			cgi = "./cgi-bin/" + cgi;
 			const char *cstr = cgi.c_str();
